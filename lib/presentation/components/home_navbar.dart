@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/responsive_config.dart';
+import 'luxury_wave_overlay.dart';
 
 class HomeNavbar extends StatefulWidget {
   final String selectedTab;
@@ -289,7 +290,7 @@ class _WaveIconButtonState extends State<_WaveIconButton>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 1550),
     )..repeat(reverse: true);
   }
 
@@ -319,32 +320,11 @@ class _WaveIconButtonState extends State<_WaveIconButton>
         child: Stack(
           alignment: Alignment.center,
           children: [
-            AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) {
-                final wave = Curves.easeInOutCubic.transform(_controller.value);
-                final center = 0.2 + (0.6 * wave);
-                final leftStop = (center - 0.3).clamp(0.0, 1.0);
-                final middleStop = center.clamp(0.0, 1.0);
-                final rightStop = (center + 0.3).clamp(0.0, 1.0);
-
-                return Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                        colors: const [
-                          Colors.transparent,
-                          Color(0x99FFD84D),
-                          Colors.transparent,
-                        ],
-                        stops: [leftStop, middleStop, rightStop],
-                      ),
-                    ),
-                  ),
-                );
-              },
+            Positioned.fill(
+              child: LuxuryWaveOverlay(
+                animation: _controller,
+                color: const Color(0xFFFFD59A),
+              ),
             ),
             Icon(
               widget.icon,

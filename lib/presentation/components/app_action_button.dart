@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../core/responsive_config.dart';
+import 'luxury_wave_overlay.dart';
 
 class AppActionButton extends StatefulWidget {
   final String text;
@@ -18,10 +19,10 @@ class AppActionButton extends StatefulWidget {
     required this.onClick,
     this.contentColor = Colors.white,
     this.gradient = const [
-      Color(0xFF2A1B5F),
-      Color(0xFF6B3FC9),
-      Color(0xFF16B8C9),
-      Color(0xFF9D7BFF)
+      Color(0xFF3B251D),
+      Color(0xFF8A5D34),
+      Color(0xFFC9915C),
+      Color(0xFFDEA46E)
     ],
     this.paddingValues = const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     this.animationSeed = 101,
@@ -47,7 +48,7 @@ class _AppActionButtonState extends State<AppActionButton>
 
     _waveController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 1450),
     )..repeat(reverse: true);
   }
 
@@ -90,7 +91,7 @@ class _AppActionButtonState extends State<AppActionButton>
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xAA6B3FC9).withOpacity(0.28),
+                color: const Color(0xAA8A5D34).withOpacity(0.28),
                 blurRadius: ResponsiveConfig.getProportionateScreenWidth(28),
                 offset: Offset(0, ResponsiveConfig.getProportionateScreenHeight(12)),
               ),
@@ -113,7 +114,10 @@ class _AppActionButtonState extends State<AppActionButton>
                 ),
               ),
               Positioned.fill(
-                child: _YellowWaveOverlay(animation: _waveController),
+                child: LuxuryWaveOverlay(
+                  animation: _waveController,
+                  color: const Color(0xFFFFD59A),
+                ),
               ),
               Center(
                 child: Padding(
@@ -133,41 +137,6 @@ class _AppActionButtonState extends State<AppActionButton>
           ),
         ),
       ),
-    );
-  }
-}
-
-class _YellowWaveOverlay extends StatelessWidget {
-  final Animation<double> animation;
-
-  const _YellowWaveOverlay({required this.animation});
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, child) {
-        final wave = Curves.easeInOutCubic.transform(animation.value);
-        final center = 0.2 + (0.6 * wave);
-        final leftStop = (center - 0.3).clamp(0.0, 1.0);
-        final middleStop = center.clamp(0.0, 1.0);
-        final rightStop = (center + 0.3).clamp(0.0, 1.0);
-
-        return DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                Colors.transparent,
-                const Color(0x99FFD84D),
-                Colors.transparent,
-              ],
-              stops: [leftStop, middleStop, rightStop],
-            ),
-          ),
-        );
-      },
     );
   }
 }

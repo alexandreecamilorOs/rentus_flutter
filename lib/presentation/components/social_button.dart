@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/responsive_config.dart';
 import '../../core/theme/app_colors.dart';
+import 'luxury_wave_overlay.dart';
 
 class SocialButton extends StatefulWidget {
   final String text;
@@ -17,8 +18,25 @@ class SocialButton extends StatefulWidget {
   State<SocialButton> createState() => _SocialButtonState();
 }
 
-class _SocialButtonState extends State<SocialButton> {
+class _SocialButtonState extends State<SocialButton>
+    with SingleTickerProviderStateMixin {
   bool _isPressed = false;
+  late final AnimationController _waveController;
+
+  @override
+  void initState() {
+    super.initState();
+    _waveController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _waveController.dispose();
+    super.dispose();
+  }
 
   void _handleTapDown(TapDownDetails details) => setState(() => _isPressed = true);
 
@@ -50,32 +68,43 @@ class _SocialButtonState extends State<SocialButton> {
             borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(16)),
             border: Border.all(color: borderTone, width: 1.5),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
             children: [
-              Container(
-                width: ResponsiveConfig.getProportionateScreenWidth(18),
-                height: ResponsiveConfig.getProportionateScreenWidth(18),
-                decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.redAccent),
-                child: Center(
-                  child: Text(
-                    'G',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: ResponsiveConfig.fontSize(12),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+              Positioned.fill(
+                child: LuxuryWaveOverlay(
+                  animation: _waveController,
+                  color: const Color(0xFFFFD59A),
                 ),
               ),
-              SizedBox(width: ResponsiveConfig.getProportionateScreenWidth(8)),
-              Text(
-                widget.text,
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w500,
-                  fontSize: ResponsiveConfig.fontSize(14),
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: ResponsiveConfig.getProportionateScreenWidth(18),
+                    height: ResponsiveConfig.getProportionateScreenWidth(18),
+                    decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primary),
+                    child: Center(
+                      child: Text(
+                        'G',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: ResponsiveConfig.fontSize(12),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: ResponsiveConfig.getProportionateScreenWidth(8)),
+                  Text(
+                    widget.text,
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                      fontSize: ResponsiveConfig.fontSize(14),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

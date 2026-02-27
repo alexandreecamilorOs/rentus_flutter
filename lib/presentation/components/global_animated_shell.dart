@@ -67,7 +67,7 @@ class _GlobalAnimatedShellState extends State<GlobalAnimatedShell>
                         end: Alignment(1, 1 - (t * 0.45)),
                         colors: const [
                           Color(0x2ADA9C5F),
-                          Color(0x1616B8C9),
+                          Color(0x1A8A5D34),
                           Colors.transparent,
                         ],
                         stops: const [0.0, 0.58, 1.0],
@@ -140,7 +140,7 @@ class _GlobalParticlesPainter extends CustomPainter {
       final y = (baseY + (phase * driftY)) % size.height;
 
       paint.color = i.isEven
-          ? const Color(0x30FFF3E4)
+          ? const Color(0x26F4E5D6)
           : const Color(0x26FFD59A);
 
       canvas.drawCircle(Offset(x, y), radius, paint);

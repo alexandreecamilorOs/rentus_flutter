@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/responsive_config.dart';
 import '../../core/theme/app_colors.dart';
+import 'luxury_wave_overlay.dart';
 
 class AuthButton extends StatefulWidget {
   final String text;
@@ -41,7 +42,7 @@ class _AuthButtonState extends State<AuthButton>
 
     _waveController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
   }
 
@@ -128,30 +129,9 @@ class _AuthButtonState extends State<AuthButton>
                   },
                 ),
               Positioned.fill(
-                child: AnimatedBuilder(
+                child: LuxuryWaveOverlay(
                   animation: _waveController,
-                  builder: (context, child) {
-                    final wave = Curves.easeInOutCubic.transform(_waveController.value);
-                    final center = 0.2 + (0.6 * wave);
-                    final leftStop = (center - 0.3).clamp(0.0, 1.0);
-                    final middleStop = center.clamp(0.0, 1.0);
-                    final rightStop = (center + 0.3).clamp(0.0, 1.0);
-
-                    return DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                          colors: const [
-                            Colors.transparent,
-                            Color(0x99FFD84D),
-                            Colors.transparent,
-                          ],
-                          stops: [leftStop, middleStop, rightStop],
-                        ),
-                      ),
-                    );
-                  },
+                  color: const Color(0xFFFFD59A),
                 ),
               ),
               Center(
