@@ -10,24 +10,14 @@ class BrandLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
-          width: ResponsiveConfig.getProportionateScreenWidth(42),
-          height: ResponsiveConfig.getProportionateScreenWidth(42),
-          decoration: BoxDecoration(
+          width: ResponsiveConfig.getProportionateScreenWidth(40),
+          height: ResponsiveConfig.getProportionateScreenWidth(40),
+          decoration: const BoxDecoration(
+            color: AppColors.primary,
             shape: BoxShape.circle,
-            gradient: const LinearGradient(
-              colors: [Color(0xFFFFE39A), AppColors.primary],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xAA4D2F24),
-                blurRadius: ResponsiveConfig.getProportionateScreenWidth(18),
-                offset: Offset(0, ResponsiveConfig.getProportionateScreenHeight(8)),
-              ),
-            ],
           ),
           child: Icon(
             Icons.real_estate_agent,
@@ -39,19 +29,19 @@ class BrandLogo extends StatelessWidget {
         Text(
           'Rent',
           style: TextStyle(
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w800,
             fontSize: ResponsiveConfig.fontSize(30),
-            letterSpacing: -0.6,
-            color: Colors.white,
+            color: Colors.black,
+            letterSpacing: -0.5,
           ),
         ),
         Text(
           'Us',
           style: TextStyle(
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w800,
             fontSize: ResponsiveConfig.fontSize(30),
-            letterSpacing: -0.6,
-            color: const Color(0xFFFFD672),
+            color: AppColors.primary,
+            letterSpacing: -0.5,
           ),
         ),
       ],

@@ -51,190 +51,204 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isLandscape = constraints.maxWidth > constraints.maxHeight;
-          final contentWidth = ResponsiveConfig.byBreakpoint<double>(
-            smallMobile: 340,
-            mobile: isLandscape ? 620 : 490,
-            tablet: 760,
-          );
+      body: AuthBackground(
+        child: SafeArea(
+          child: Stack(
+            children: [
+              Positioned(
+                top: ResponsiveConfig.getProportionateScreenHeight(28),
+                left: ResponsiveConfig.getProportionateScreenWidth(28),
+                child: const BrandLogo(),
+              ),
+              Center(
+                child: SingleChildScrollView(
+                  padding: ResponsiveConfig.adaptivePadding(horizontal: 16, vertical: 20),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final width = ResponsiveConfig.byBreakpoint<double>(
+                        smallMobile: 340,
+                        mobile: 500,
+                        tablet: 740,
+                      );
 
-          return AuthBackground(
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          const Color(0xFF241711),
-                          const Color(0xFF3B251D).withOpacity(0.92),
-                          const Color(0xFF1A1210).withOpacity(0.9),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                SafeArea(
-                  child: SingleChildScrollView(
-                    padding: ResponsiveConfig.adaptivePadding(horizontal: 16, vertical: 16),
-                    child: Column(
-                      children: [
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              left: ResponsiveConfig.adaptiveSpacing(mobile: 8),
-                              top: ResponsiveConfig.adaptiveSpacing(mobile: 8),
-                            ),
-                            child: const BrandLogo(),
-                          ),
+                      return ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: ResponsiveConfig.getProportionateScreenWidth(width),
                         ),
-                        SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(18)),
-                        ConstrainedBox(
-                          constraints: BoxConstraints(maxWidth: ResponsiveConfig.getProportionateScreenWidth(contentWidth)),
-                          child: AuthModal(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    if (context.canPop()) context.pop();
-                                  },
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.arrow_back, color: Color(0xFFF6E6D1)),
-                                      SizedBox(width: ResponsiveConfig.getProportionateScreenWidth(8)),
-                                      Text(
-                                        'Volver',
-                                        style: TextStyle(
-                                          color: const Color(0xFFF6E6D1),
-                                          fontSize: ResponsiveConfig.fontSize(14),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(22)),
-                                AuthTabRow(
-                                  isLoginSelected: false,
-                                  onLoginClick: () => context.go('/login'),
-                                  onRegisterClick: () {},
-                                ),
-                                SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(22)),
-                                Text(
-                                  'Crea tu cuenta',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: ResponsiveConfig.fontSize(26),
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.3,
-                                  ),
-                                ),
-                                SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(6)),
-                                Text(
-                                  'Completa tus datos para comenzar',
-                                  style: TextStyle(
-                                    color: const Color(0xFFEADFCF),
-                                    fontSize: ResponsiveConfig.fontSize(14),
-                                  ),
-                                ),
-                                SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(22)),
-                                AuthInputField(value: _name, onValueChange: (val) => setState(() => _name = val), label: 'Nombre completo', leadingIcon: Icons.person),
-                                AuthInputField(value: _email, onValueChange: (val) => setState(() => _email = val), label: 'Email', leadingIcon: Icons.email),
-                                AuthInputField(value: _phone, onValueChange: (val) => setState(() => _phone = val), label: 'Teléfono', leadingIcon: Icons.phone),
-                                AuthInputField(value: _idDocument, onValueChange: (val) => setState(() => _idDocument = val), label: 'Documento de identidad', leadingIcon: Icons.badge),
-                                AuthInputField(value: _address, onValueChange: (val) => setState(() => _address = val), label: 'Dirección', leadingIcon: Icons.location_on),
-                                AuthInputField(
-                                  value: _password,
-                                  onValueChange: (val) => setState(() => _password = val),
-                                  label: 'Contraseña',
-                                  leadingIcon: Icons.lock,
-                                  isPassword: true,
-                                  isPasswordVisible: _isPasswordVisible,
-                                  onTogglePasswordVisibility: () {
-                                    setState(() => _isPasswordVisible = !_isPasswordVisible);
-                                  },
-                                ),
-                                Row(
+                        child: AuthModal(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(8)),
+                              GestureDetector(
+                                onTap: () {
+                                  if (context.canPop()) context.pop();
+                                },
+                                child: Row(
                                   children: [
-                                    Checkbox(
-                                      value: _acceptTerms,
-                                      onChanged: (val) => setState(() => _acceptTerms = val ?? false),
-                                      activeColor: const Color(0xFFFFD672),
-                                    ),
-                                    Expanded(
-                                      child: Text.rich(
-                                        TextSpan(
+                                    const Icon(Icons.arrow_back, color: AppColors.textSecondary),
+                                    SizedBox(width: ResponsiveConfig.getProportionateScreenWidth(8)),
+                                    const Text('Volver', style: TextStyle(color: AppColors.textSecondary)),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              AuthTabRow(
+                                isLoginSelected: false,
+                                onLoginClick: () => context.go('/login'),
+                                onRegisterClick: () {},
+                              ),
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              Text(
+                                'Crea tu cuenta',
+                                style: TextStyle(
+                                  fontSize: ResponsiveConfig.fontSize(24),
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(4)),
+                              Text(
+                                'Completa tus datos para comenzar',
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: ResponsiveConfig.fontSize(14),
+                                ),
+                              ),
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              AuthInputField(
+                                value: _name,
+                                onValueChange: (val) => setState(() => _name = val),
+                                label: 'Nombre completo',
+                                leadingIcon: Icons.person,
+                              ),
+                              AuthInputField(
+                                value: _email,
+                                onValueChange: (val) => setState(() => _email = val),
+                                label: 'Email',
+                                leadingIcon: Icons.email,
+                              ),
+                              AuthInputField(
+                                value: _phone,
+                                onValueChange: (val) => setState(() => _phone = val),
+                                label: 'Teléfono',
+                                leadingIcon: Icons.phone,
+                              ),
+                              AuthInputField(
+                                value: _idDocument,
+                                onValueChange: (val) => setState(() => _idDocument = val),
+                                label: 'Documento de identidad',
+                                leadingIcon: Icons.badge,
+                              ),
+                              AuthInputField(
+                                value: _address,
+                                onValueChange: (val) => setState(() => _address = val),
+                                label: 'Dirección',
+                                leadingIcon: Icons.location_on,
+                              ),
+                              AuthInputField(
+                                value: _password,
+                                onValueChange: (val) => setState(() => _password = val),
+                                label: 'Contraseña',
+                                leadingIcon: Icons.lock,
+                                isPassword: true,
+                                isPasswordVisible: _isPasswordVisible,
+                                onTogglePasswordVisibility: () {
+                                  setState(() => _isPasswordVisible = !_isPasswordVisible);
+                                },
+                              ),
+                              Row(
+                                children: [
+                                  Checkbox(
+                                    value: _acceptTerms,
+                                    onChanged: (val) => setState(() => _acceptTerms = val ?? false),
+                                    activeColor: AppColors.primary,
+                                  ),
+                                  Expanded(
+                                    child: GestureDetector(
+                                      onTap: () {},
+                                      child: RichText(
+                                        text: TextSpan(
                                           text: 'Acepto los ',
                                           style: TextStyle(
-                                            color: Colors.white,
+                                            color: AppColors.textPrimary,
                                             fontSize: ResponsiveConfig.fontSize(14),
                                           ),
                                           children: const [
                                             TextSpan(
                                               text: 'términos y condiciones',
                                               style: TextStyle(
-                                                color: Color(0xFFFFD672),
-                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.primary,
+                                                fontWeight: FontWeight.w600,
                                               ),
                                             ),
                                           ],
                                         ),
                                       ),
                                     ),
-                                  ],
-                                ),
-                                if (_errorMessage != null)
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(vertical: ResponsiveConfig.getProportionateScreenHeight(8)),
-                                    child: Text(_errorMessage!, style: const TextStyle(color: AppColors.error)),
                                   ),
-                                SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(8)),
-                                AuthButton(text: 'Crear Cuenta', enabled: _isFormValid, isLoading: _isLoading, onClick: _onRegisterClick),
-                                SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
-                                const DividerWithText(text: 'O regístrate con'),
-                                SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(20)),
-                                SocialButton(text: 'Registrarse con Google', onClick: () {}),
-                                SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(20)),
-                                Center(
-                                  child: GestureDetector(
-                                    onTap: () => context.go('/login'),
-                                    child: Text.rich(
-                                      TextSpan(
-                                        text: '¿Ya tienes una cuenta? ',
-                                        style: TextStyle(
-                                          color: const Color(0xFFEADFCF),
-                                          fontSize: ResponsiveConfig.fontSize(14),
-                                        ),
-                                        children: const [
-                                          TextSpan(
-                                            text: 'Inicia sesión aquí',
-                                            style: TextStyle(
-                                              color: Color(0xFFFFD672),
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
-                                        ],
+                                ],
+                              ),
+                              if (_errorMessage != null)
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: ResponsiveConfig.getProportionateScreenHeight(8),
+                                  ),
+                                  child: Text(
+                                    _errorMessage!,
+                                    style: const TextStyle(color: AppColors.error),
+                                  ),
+                                ),
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(8)),
+                              AuthButton(
+                                text: 'Crear Cuenta',
+                                enabled: _isFormValid,
+                                isLoading: _isLoading,
+                                onClick: _onRegisterClick,
+                              ),
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              const DividerWithText(text: 'O regístrate con'),
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              SocialButton(
+                                text: 'Registrarse con Google',
+                                onClick: () {},
+                              ),
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              Center(
+                                child: GestureDetector(
+                                  onTap: () => context.go('/login'),
+                                  child: RichText(
+                                    text: TextSpan(
+                                      text: '¿Ya tienes una cuenta? ',
+                                      style: TextStyle(
+                                        color: AppColors.textSecondary,
+                                        fontSize: ResponsiveConfig.fontSize(14),
                                       ),
+                                      children: const [
+                                        TextSpan(
+                                          text: 'Inicia sesión aquí',
+                                          style: TextStyle(
+                                            color: AppColors.primary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(8)),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                 ),
-              ],
-            ),
-          );
-        },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

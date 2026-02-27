@@ -41,195 +41,169 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isLandscape = constraints.maxWidth > constraints.maxHeight;
-          final contentWidth = ResponsiveConfig.byBreakpoint<double>(
-            smallMobile: 340,
-            mobile: isLandscape ? 560 : 460,
-            tablet: 720,
-          );
+      body: AuthBackground(
+        child: SafeArea(
+          child: Stack(
+            children: [
+              Positioned(
+                top: ResponsiveConfig.getProportionateScreenHeight(28),
+                left: ResponsiveConfig.getProportionateScreenWidth(28),
+                child: const BrandLogo(),
+              ),
+              Center(
+                child: SingleChildScrollView(
+                  padding: ResponsiveConfig.adaptivePadding(horizontal: 16, vertical: 16),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final width = ResponsiveConfig.byBreakpoint<double>(
+                        smallMobile: 340,
+                        mobile: 480,
+                        tablet: 620,
+                      );
 
-          return AuthBackground(
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          const Color(0xFF241711),
-                          const Color(0xFF3B251D).withOpacity(0.92),
-                          const Color(0xFF1A1210).withOpacity(0.9),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                SafeArea(
-                  child: SingleChildScrollView(
-                    padding: ResponsiveConfig.adaptivePadding(horizontal: 16, vertical: 16),
-                    child: Column(
-                      children: [
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              left: ResponsiveConfig.adaptiveSpacing(mobile: 8),
-                              top: ResponsiveConfig.adaptiveSpacing(mobile: 8),
-                            ),
-                            child: const BrandLogo(),
-                          ),
+                      return ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: ResponsiveConfig.getProportionateScreenWidth(width),
                         ),
-                        SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(22)),
-                        ConstrainedBox(
-                          constraints: BoxConstraints(maxWidth: ResponsiveConfig.getProportionateScreenWidth(contentWidth)),
-                          child: AuthModal(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    if (context.canPop()) context.pop();
-                                  },
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.arrow_back, color: Color(0xFFF6E6D1)),
-                                      SizedBox(width: ResponsiveConfig.getProportionateScreenWidth(8)),
-                                      Text(
-                                        'Volver',
-                                        style: TextStyle(
-                                          color: const Color(0xFFF6E6D1),
-                                          fontSize: ResponsiveConfig.fontSize(14),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
-                                AuthTabRow(
-                                  isLoginSelected: true,
-                                  onLoginClick: () {},
-                                  onRegisterClick: () => context.go('/register'),
-                                ),
-                                SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
-                                Text(
-                                  'Accede a tu cuenta',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: ResponsiveConfig.fontSize(26),
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.3,
-                                  ),
-                                ),
-                                SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(6)),
-                                Text(
-                                  'Ingresa tus credenciales para continuar',
-                                  style: TextStyle(
-                                    color: const Color(0xFFEADFCF),
-                                    fontSize: ResponsiveConfig.fontSize(14),
-                                  ),
-                                ),
-                                SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
-                                AuthInputField(
-                                  value: _email,
-                                  onValueChange: (val) => setState(() => _email = val),
-                                  label: 'Email',
-                                  leadingIcon: Icons.email,
-                                ),
-                                AuthInputField(
-                                  value: _password,
-                                  onValueChange: (val) => setState(() => _password = val),
-                                  label: 'Contraseña',
-                                  leadingIcon: Icons.lock,
-                                  isPassword: true,
-                                  isPasswordVisible: _isPasswordVisible,
-                                  onTogglePasswordVisibility: () {
-                                    setState(() => _isPasswordVisible = !_isPasswordVisible);
-                                  },
-                                ),
-                                Row(
+                        child: AuthModal(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(8)),
+                              GestureDetector(
+                                onTap: () {
+                                  if (context.canPop()) context.pop();
+                                },
+                                child: Row(
                                   children: [
-                                    Checkbox(
-                                      value: _rememberMe,
-                                      onChanged: (val) => setState(() => _rememberMe = val ?? false),
-                                      activeColor: const Color(0xFFFFD672),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        'Recordarme',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: ResponsiveConfig.fontSize(13),
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      '¿Olvidaste tu contraseña?',
-                                      style: TextStyle(
-                                        color: const Color(0xFFFFD672),
-                                        fontSize: ResponsiveConfig.fontSize(12),
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
+                                    const Icon(Icons.arrow_back, color: AppColors.textSecondary),
+                                    SizedBox(width: ResponsiveConfig.getProportionateScreenWidth(8)),
+                                    const Text('Volver', style: TextStyle(color: AppColors.textSecondary)),
                                   ],
                                 ),
-                                if (_errorMessage != null)
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: ResponsiveConfig.getProportionateScreenHeight(8),
-                                    ),
-                                    child: Text(_errorMessage!, style: const TextStyle(color: AppColors.error)),
-                                  ),
-                                SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(8)),
-                                AuthButton(
-                                  text: 'Iniciar Sesión',
-                                  enabled: _isFormValid,
-                                  isLoading: _isLoading,
-                                  onClick: _onLoginClick,
+                              ),
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              AuthTabRow(
+                                isLoginSelected: true,
+                                onLoginClick: () {},
+                                onRegisterClick: () => context.go('/register'),
+                              ),
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              Text(
+                                'Accede a tu cuenta',
+                                style: TextStyle(
+                                  fontSize: ResponsiveConfig.fontSize(24),
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
                                 ),
-                                SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
-                                const DividerWithText(text: 'O continúa con'),
-                                SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(20)),
-                                SocialButton(text: 'Continuar con Google', onClick: () {}),
-                                SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(22)),
-                                Center(
-                                  child: GestureDetector(
-                                    onTap: () => context.go('/register'),
-                                    child: Text.rich(
-                                      TextSpan(
-                                        text: '¿No tienes una cuenta? ',
-                                        style: TextStyle(
-                                          color: const Color(0xFFEADFCF),
-                                          fontSize: ResponsiveConfig.fontSize(14),
-                                        ),
-                                        children: const [
-                                          TextSpan(
-                                            text: 'Regístrate gratis',
-                                            style: TextStyle(
-                                              color: Color(0xFFFFD672),
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
-                                        ],
+                              ),
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(4)),
+                              Text(
+                                'Ingresa tus credenciales para continuar',
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: ResponsiveConfig.fontSize(14),
+                                ),
+                              ),
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              AuthInputField(
+                                value: _email,
+                                onValueChange: (val) => setState(() => _email = val),
+                                label: 'Email',
+                                leadingIcon: Icons.email,
+                              ),
+                              AuthInputField(
+                                value: _password,
+                                onValueChange: (val) => setState(() => _password = val),
+                                label: 'Contraseña',
+                                leadingIcon: Icons.lock,
+                                isPassword: true,
+                                isPasswordVisible: _isPasswordVisible,
+                                onTogglePasswordVisibility: () {
+                                  setState(() => _isPasswordVisible = !_isPasswordVisible);
+                                },
+                              ),
+                              Row(
+                                children: [
+                                  Checkbox(
+                                    value: _rememberMe,
+                                    onChanged: (val) => setState(() => _rememberMe = val ?? false),
+                                    activeColor: AppColors.primary,
+                                  ),
+                                  const Text('Recordarme', style: TextStyle(color: AppColors.textPrimary)),
+                                  const Spacer(),
+                                  GestureDetector(
+                                    onTap: () {},
+                                    child: Text(
+                                      '¿Olvidaste tu contraseña?',
+                                      style: TextStyle(
+                                        color: AppColors.primary,
+                                        fontSize: ResponsiveConfig.fontSize(12),
                                       ),
                                     ),
                                   ),
+                                ],
+                              ),
+                              if (_errorMessage != null)
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: ResponsiveConfig.getProportionateScreenHeight(8),
+                                  ),
+                                  child: Text(
+                                    _errorMessage!,
+                                    style: const TextStyle(color: AppColors.error),
+                                  ),
                                 ),
-                              ],
-                            ),
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(8)),
+                              AuthButton(
+                                text: 'Iniciar Sesión',
+                                enabled: _isFormValid,
+                                isLoading: _isLoading,
+                                onClick: _onLoginClick,
+                              ),
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              const DividerWithText(text: 'O continúa con'),
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              SocialButton(
+                                text: 'Continuar con Google',
+                                onClick: () {},
+                              ),
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              Center(
+                                child: GestureDetector(
+                                  onTap: () => context.go('/register'),
+                                  child: RichText(
+                                    text: TextSpan(
+                                      text: '¿No tienes una cuenta? ',
+                                      style: TextStyle(
+                                        color: AppColors.textSecondary,
+                                        fontSize: ResponsiveConfig.fontSize(14),
+                                      ),
+                                      children: const [
+                                        TextSpan(
+                                          text: 'Regístrate gratis',
+                                          style: TextStyle(
+                                            color: AppColors.primary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(8)),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                 ),
-              ],
-            ),
-          );
-        },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
