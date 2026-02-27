@@ -4,6 +4,7 @@ import '../../components/animated_heading.dart';
 import 'package:go_router/go_router.dart';
 import '../../components/home_navbar.dart';
 import '../../animations/shimmer_block.dart';
+import '../../components/modern_view_wrapper.dart';
 
 class PropertyCardItem {
   final String title;
@@ -161,7 +162,7 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
           ),
         ],
       ),
-    );
+    ).modernWrapped();
   }
 
   Widget _buildContent() {

@@ -3,6 +3,7 @@ import '../../components/home_navbar.dart';
 import '../../components/animated_heading.dart';
 import '../../components/app_action_button.dart';
 import 'package:go_router/go_router.dart';
+import '../../components/modern_view_wrapper.dart';
 
 class DemoProperty {
   final String title;
@@ -111,7 +112,7 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ).modernWrapped();
   }
 }
 

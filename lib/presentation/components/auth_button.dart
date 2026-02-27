@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../core/responsive_config.dart';
 import '../../core/theme/app_colors.dart';
 
 class AuthButton extends StatefulWidget {
@@ -20,9 +22,10 @@ class AuthButton extends StatefulWidget {
 }
 
 class _AuthButtonState extends State<AuthButton>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _glowController;
   late Animation<double> _glowAnimation;
+  late AnimationController _waveController;
   bool _isPressed = false;
 
   @override
@@ -32,15 +35,20 @@ class _AuthButtonState extends State<AuthButton>
       vsync: this,
       duration: const Duration(milliseconds: 1800),
     )..repeat(reverse: false);
-
     _glowAnimation = Tween<double>(begin: -0.5, end: 1.5).animate(
       CurvedAnimation(parent: _glowController, curve: Curves.fastOutSlowIn),
     );
+
+    _waveController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..repeat(reverse: true);
   }
 
   @override
   void dispose() {
     _glowController.dispose();
+    _waveController.dispose();
     super.dispose();
   }
 
@@ -65,23 +73,30 @@ class _AuthButtonState extends State<AuthButton>
 
   @override
   Widget build(BuildContext context) {
-    final double scale = _isPressed ? 0.98 : 1.0;
     final bool isDisabled = !widget.enabled || widget.isLoading;
+    final radius = BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(16));
 
     return GestureDetector(
       onTapDown: _handleTapDown,
       onTapUp: _handleTapUp,
       onTapCancel: _handleTapCancel,
       child: AnimatedScale(
-        scale: scale,
+        scale: _isPressed ? 0.98 : 1,
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeOutBack,
         child: Container(
           width: double.infinity,
-          height: 56,
+          height: ResponsiveConfig.getProportionateScreenHeight(56),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: radius,
             color: isDisabled ? AppColors.primaryDark.withOpacity(0.4) : null,
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0x663A2219),
+                blurRadius: ResponsiveConfig.getProportionateScreenWidth(26),
+                offset: Offset(0, ResponsiveConfig.getProportionateScreenHeight(10)),
+              ),
+            ],
           ),
           clipBehavior: Clip.antiAlias,
           child: Stack(
@@ -90,38 +105,63 @@ class _AuthButtonState extends State<AuthButton>
                 AnimatedBuilder(
                   animation: _glowAnimation,
                   builder: (context, child) {
-                    return Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                            colors: const [
-                              AppColors.primaryDark,
-                              AppColors.primary,
-                              Color(0xFF7D512E),
-                              AppColors.primaryDark,
-                            ],
-                            stops: [
-                              0.0,
-                              _glowAnimation.value - 0.2,
-                              _glowAnimation.value,
-                              _glowAnimation.value + 0.2,
-                            ].map((s) => s.clamp(0.0, 1.0)).toList(),
-                          ),
+                    return DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: const [
+                            AppColors.primaryDark,
+                            AppColors.primary,
+                            Color(0xFF7D512E),
+                            AppColors.primaryDark,
+                          ],
+                          stops: [
+                            0,
+                            (_glowAnimation.value - 0.2).clamp(0.0, 1.0),
+                            _glowAnimation.value.clamp(0.0, 1.0),
+                            (_glowAnimation.value + 0.2).clamp(0.0, 1.0),
+                          ],
                         ),
                       ),
                     );
                   },
                 ),
+              Positioned.fill(
+                child: AnimatedBuilder(
+                  animation: _waveController,
+                  builder: (context, child) {
+                    final wave = Curves.easeInOutCubic.transform(_waveController.value);
+                    final center = 0.2 + (0.6 * wave);
+                    final leftStop = (center - 0.3).clamp(0.0, 1.0);
+                    final middleStop = center.clamp(0.0, 1.0);
+                    final rightStop = (center + 0.3).clamp(0.0, 1.0);
+
+                    return DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: const [
+                            Colors.transparent,
+                            Color(0x99FFD84D),
+                            Colors.transparent,
+                          ],
+                          stops: [leftStop, middleStop, rightStop],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
               Center(
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
                   child: widget.isLoading
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
+                      ? SizedBox(
+                          width: ResponsiveConfig.getProportionateScreenWidth(18),
+                          height: ResponsiveConfig.getProportionateScreenWidth(18),
+                          child: const CircularProgressIndicator(
                             color: AppColors.white,
                             strokeWidth: 2,
                           ),
@@ -131,17 +171,18 @@ class _AuthButtonState extends State<AuthButton>
                           children: [
                             Text(
                               widget.text,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.7,
+                                fontSize: ResponsiveConfig.fontSize(16),
                               ),
                             ),
-                            const SizedBox(width: 6),
-                            const Icon(
+                            SizedBox(width: ResponsiveConfig.getProportionateScreenWidth(6)),
+                            Icon(
                               Icons.arrow_forward,
                               color: AppColors.white,
-                              size: 20,
+                              size: ResponsiveConfig.getProportionateScreenWidth(20),
                             ),
                           ],
                         ),

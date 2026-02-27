@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../components/home_navbar.dart';
 import '../../components/app_action_button.dart';
 import 'package:go_router/go_router.dart';
+import '../../components/modern_view_wrapper.dart';
 
 class PropertyDetailScreen extends StatefulWidget {
   const PropertyDetailScreen({super.key});
@@ -214,7 +215,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
           ),
         ],
       ),
-    );
+    ).modernWrapped();
   }
 }
 

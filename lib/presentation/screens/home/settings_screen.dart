@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../components/home_navbar.dart';
 import '../../components/app_action_button.dart';
 import 'package:go_router/go_router.dart';
+import '../../components/modern_view_wrapper.dart';
 
 enum SettingsSection { Profile, Security, Notifications, Preferences }
 
@@ -167,7 +168,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
-    );
+    ).modernWrapped();
   }
 
   Widget _buildContent() {

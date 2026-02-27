@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../components/home_navbar.dart';
 import '../../components/app_action_button.dart';
 import 'package:go_router/go_router.dart';
+import '../../components/modern_view_wrapper.dart';
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
@@ -93,7 +94,7 @@ class _AboutScreenState extends State<AboutScreen>
           ),
         ],
       ),
-    );
+    ).modernWrapped();
   }
 
   Widget _buildSectionLabel(String text) {

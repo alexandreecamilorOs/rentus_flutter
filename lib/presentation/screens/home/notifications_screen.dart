@@ -3,6 +3,7 @@ import '../../components/home_navbar.dart';
 import '../../components/app_action_button.dart';
 import '../../components/animated_heading.dart';
 import 'package:go_router/go_router.dart';
+import '../../components/modern_view_wrapper.dart';
 
 class NotificationItem {
   final String title;
@@ -267,7 +268,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
         ],
       ),
-    );
+    ).modernWrapped();
   }
 }
 
