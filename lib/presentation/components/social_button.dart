@@ -27,7 +27,7 @@ class _SocialButtonState extends State<SocialButton>
     super.initState();
     _waveController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1000),
     )..repeat(reverse: true);
   }
 
@@ -65,10 +65,11 @@ class _SocialButtonState extends State<SocialButton>
                 child: AnimatedBuilder(
                   animation: _waveController,
                   builder: (context, child) {
-                    final center = (_waveController.value * 1.4) - 0.2;
-                    final leftStop = (center - 0.28).clamp(0.0, 1.0);
+                    final wave = Curves.easeInOutCubic.transform(_waveController.value);
+                    final center = 0.2 + (0.6 * wave);
+                    final leftStop = (center - 0.3).clamp(0.0, 1.0);
                     final middleStop = center.clamp(0.0, 1.0);
-                    final rightStop = (center + 0.28).clamp(0.0, 1.0);
+                    final rightStop = (center + 0.3).clamp(0.0, 1.0);
 
                     return DecoratedBox(
                       decoration: BoxDecoration(
@@ -77,7 +78,7 @@ class _SocialButtonState extends State<SocialButton>
                           end: Alignment.centerRight,
                           colors: const [
                             Colors.transparent,
-                            Color(0xAAFFD84D),
+                            Color(0x99FFD84D),
                             Colors.transparent,
                           ],
                           stops: [leftStop, middleStop, rightStop],

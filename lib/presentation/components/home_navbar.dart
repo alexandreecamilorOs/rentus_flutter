@@ -289,7 +289,7 @@ class _WaveIconButtonState extends State<_WaveIconButton>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1100),
+      duration: const Duration(milliseconds: 1000),
     )..repeat(reverse: true);
   }
 
@@ -322,10 +322,11 @@ class _WaveIconButtonState extends State<_WaveIconButton>
             AnimatedBuilder(
               animation: _controller,
               builder: (context, child) {
-                final center = (_controller.value * 1.4) - 0.2;
-                final leftStop = (center - 0.28).clamp(0.0, 1.0);
+                final wave = Curves.easeInOutCubic.transform(_controller.value);
+                final center = 0.2 + (0.6 * wave);
+                final leftStop = (center - 0.3).clamp(0.0, 1.0);
                 final middleStop = center.clamp(0.0, 1.0);
-                final rightStop = (center + 0.28).clamp(0.0, 1.0);
+                final rightStop = (center + 0.3).clamp(0.0, 1.0);
 
                 return Positioned.fill(
                   child: DecoratedBox(
@@ -335,7 +336,7 @@ class _WaveIconButtonState extends State<_WaveIconButton>
                         end: Alignment.centerRight,
                         colors: const [
                           Colors.transparent,
-                          Color(0xAAFFD84D),
+                          Color(0x99FFD84D),
                           Colors.transparent,
                         ],
                         stops: [leftStop, middleStop, rightStop],

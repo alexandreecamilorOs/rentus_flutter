@@ -47,7 +47,7 @@ class _AppActionButtonState extends State<AppActionButton>
 
     _waveController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1000),
     )..repeat(reverse: true);
   }
 
@@ -147,7 +147,8 @@ class _YellowWaveOverlay extends StatelessWidget {
     return AnimatedBuilder(
       animation: animation,
       builder: (context, child) {
-        final center = (animation.value * 1.4) - 0.2;
+        final wave = Curves.easeInOutCubic.transform(animation.value);
+        final center = 0.2 + (0.6 * wave);
         final leftStop = (center - 0.3).clamp(0.0, 1.0);
         final middleStop = center.clamp(0.0, 1.0);
         final rightStop = (center + 0.3).clamp(0.0, 1.0);
@@ -159,7 +160,7 @@ class _YellowWaveOverlay extends StatelessWidget {
               end: Alignment.centerRight,
               colors: [
                 Colors.transparent,
-                const Color(0xBBFFD84D),
+                const Color(0x99FFD84D),
                 Colors.transparent,
               ],
               stops: [leftStop, middleStop, rightStop],
