@@ -1,5 +1,8 @@
-import 'package:flutter/material.dart';
 import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+
+import '../../core/responsive_config.dart';
 
 class AppActionButton extends StatefulWidget {
   final String text;
@@ -20,9 +23,8 @@ class AppActionButton extends StatefulWidget {
       Color(0xFF16B8C9),
       Color(0xFF9D7BFF)
     ],
-    this.paddingValues =
-        const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-    this.animationSeed = 101, // Valor por defecto
+    this.paddingValues = const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    this.animationSeed = 101,
   });
 
   @override
@@ -49,8 +51,8 @@ class _AppActionButtonState extends State<AppActionButton>
     super.dispose();
   }
 
-  void _handleTapDown(TapDownDetails details) =>
-      setState(() => _isPressed = true);
+  void _handleTapDown(TapDownDetails details) => setState(() => _isPressed = true);
+
   void _handleTapUp(TapUpDetails details) {
     setState(() => _isPressed = false);
     widget.onClick();
@@ -60,55 +62,63 @@ class _AppActionButtonState extends State<AppActionButton>
 
   @override
   Widget build(BuildContext context) {
+    ResponsiveConfig.init(context);
     final scale = _isPressed ? 0.98 : 1.0;
 
-    return GestureDetector(
-      onTapDown: _handleTapDown,
-      onTapUp: _handleTapUp,
-      onTapCancel: _handleTapCancel,
-      child: AnimatedScale(
-        scale: scale,
-        duration: const Duration(milliseconds: 100),
-        child: Container(
-          width: double.infinity,
-          height: 52,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: LinearGradient(
-              colors: widget.gradient,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: AnimatedBuilder(
-                  animation: _controller,
-                  builder: (context, child) {
-                    return CustomPaint(
-                      painter: _BubblePainter(
-                        phase: _controller.value,
-                        seed: widget.animationSeed,
-                      ),
-                    );
-                  },
-                ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTapDown: _handleTapDown,
+        onTapUp: _handleTapUp,
+        onTapCancel: _handleTapCancel,
+        borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(16)),
+        splashColor: Colors.white.withOpacity(0.25),
+        highlightColor: Colors.white.withOpacity(0.08),
+        child: AnimatedScale(
+          scale: scale,
+          duration: const Duration(milliseconds: 100),
+          child: Container(
+            width: double.infinity,
+            height: ResponsiveConfig.getProportionateScreenHeight(52),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(16)),
+              gradient: LinearGradient(
+                colors: widget.gradient,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              Center(
-                child: Padding(
-                  padding: widget.paddingValues,
-                  child: Text(
-                    widget.text,
-                    style: TextStyle(
-                      color: widget.contentColor,
-                      fontWeight: FontWeight.bold,
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: AnimatedBuilder(
+                    animation: _controller,
+                    builder: (context, child) {
+                      return CustomPaint(
+                        painter: _BubblePainter(
+                          phase: _controller.value,
+                          seed: widget.animationSeed,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Center(
+                  child: Padding(
+                    padding: widget.paddingValues,
+                    child: Text(
+                      widget.text,
+                      style: TextStyle(
+                        color: widget.contentColor,
+                        fontSize: ResponsiveConfig.fontSize(16),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -127,7 +137,6 @@ class _BubblePainter extends CustomPainter {
     final paint = Paint()..style = PaintingStyle.fill;
     final rand = math.Random(seed);
 
-    // Dibujamos burbujas animadas
     for (int i = 0; i < 20; i++) {
       final originX = rand.nextDouble() * size.width;
       final originY = rand.nextDouble() * size.height;

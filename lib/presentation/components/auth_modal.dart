@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/responsive_config.dart';
+
 class AuthModal extends StatelessWidget {
   final Widget child;
   final EdgeInsets padding;
@@ -12,21 +14,23 @@ class AuthModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ResponsiveConfig.init(context);
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.98),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(24)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
-            blurRadius: 24,
+            blurRadius: ResponsiveConfig.getProportionateScreenWidth(24),
             offset: const Offset(0, 8),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(24)),
         child: Padding(
           padding: padding,
           child: child,
