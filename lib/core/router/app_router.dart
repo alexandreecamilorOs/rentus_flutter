@@ -1,108 +1,65 @@
 import 'package:go_router/go_router.dart';
+
 import '../../presentation/screens/auth/login_screen.dart';
 import '../../presentation/screens/auth/register_screen.dart';
-import '../../presentation/screens/home/home_screen.dart';
-
-import '../../presentation/screens/home/properties_screen.dart';
-import '../../presentation/screens/home/property_detail_screen.dart';
-import '../../presentation/screens/home/property_create_screen.dart';
-import '../../presentation/screens/home/property_edit_screen.dart';
-import '../../presentation/screens/home/profile_screen.dart';
-import '../../presentation/screens/home/settings_screen.dart';
-import '../../presentation/screens/home/payments_screen.dart';
-import '../../presentation/screens/home/contracts_screen.dart';
-import '../../presentation/screens/home/maintenance_screen.dart';
-import '../../presentation/screens/home/reports_screen.dart';
-import '../../presentation/screens/home/notifications_screen.dart';
-import '../../presentation/screens/home/requests_screen.dart';
 import '../../presentation/screens/home/about_screen.dart';
+import '../../presentation/screens/home/contracts_screen.dart';
+import '../../presentation/screens/home/home_screen.dart';
+import '../../presentation/screens/home/maintenance_screen.dart';
+import '../../presentation/screens/home/notifications_screen.dart';
+import '../../presentation/screens/home/payments_screen.dart';
+import '../../presentation/screens/home/profile_screen.dart';
+import '../../presentation/screens/home/properties_screen.dart';
+import '../../presentation/screens/home/property_create_screen.dart';
+import '../../presentation/screens/home/property_detail_screen.dart';
+import '../../presentation/screens/home/property_edit_screen.dart';
+import '../../presentation/screens/home/reports_screen.dart';
+import '../../presentation/screens/home/requests_screen.dart';
+import '../../presentation/screens/home/settings_screen.dart';
 
 class AppRoutes {
-  static const String splash = '/';
-  static const String login = '/login';
-  static const String register = '/register';
-  static const String home = '/home';
-  static const String properties = '/properties';
-  static const String propertyDetail = '/properties/detail';
-  static const String propertyCreate = '/properties/create';
-  static const String propertyEdit = '/properties/edit';
-  static const String profile = '/profile';
-  static const String settings = '/settings';
-  static const String payments = '/payments';
-  static const String contracts = '/contracts';
-  static const String maintenance = '/maintenance';
-  static const String reports = '/reports';
-  static const String notifications = '/notifications';
-  static const String requests = '/requests';
-  static const String about = '/about';
+  static const login = '/login';
+  static const register = '/register';
+  static const home = '/home';
+  static const properties = '/properties';
+  static const propertyDetail = '/properties/:id';
+  static const propertyCreate = '/properties/create';
+  static const propertyEdit = '/properties/:id/edit';
+  static const profile = '/profile';
+  static const settings = '/settings';
+  static const payments = '/payments';
+  static const contracts = '/contracts';
+  static const maintenance = '/maintenance';
+  static const reports = '/reports';
+  static const notifications = '/notifications';
+  static const requests = '/requests';
+  static const about = '/about';
 }
 
 final router = GoRouter(
-  initialLocation: AppRoutes.login, // Inicia temporalmente en login
+  initialLocation: AppRoutes.login,
   routes: [
-    GoRoute(
-      path: AppRoutes.login,
-      builder: (context, state) => const LoginScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.register,
-      builder: (context, state) => const RegisterScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.home,
-      builder: (context, state) => const HomeScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.properties,
-      builder: (context, state) => const PropertiesScreen(),
-    ),
+    GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginScreen()),
+    GoRoute(path: AppRoutes.register, builder: (_, __) => const RegisterScreen()),
+    GoRoute(path: AppRoutes.home, builder: (_, __) => const HomeScreen()),
+    GoRoute(path: AppRoutes.properties, builder: (_, __) => const PropertiesScreen()),
     GoRoute(
       path: AppRoutes.propertyDetail,
-      builder: (context, state) => const PropertyDetailScreen(),
+      builder: (_, state) => PropertyDetailScreen(propertyId: int.tryParse(state.pathParameters['id'] ?? '') ?? 0),
     ),
-    GoRoute(
-      path: AppRoutes.propertyCreate,
-      builder: (context, state) => const PropertyCreateScreen(),
-    ),
+    GoRoute(path: AppRoutes.propertyCreate, builder: (_, __) => const PropertyCreateScreen()),
     GoRoute(
       path: AppRoutes.propertyEdit,
-      builder: (context, state) => const PropertyEditScreen(),
+      builder: (_, state) => PropertyEditScreen(propertyId: int.tryParse(state.pathParameters['id'] ?? '') ?? 0),
     ),
-    GoRoute(
-      path: AppRoutes.profile,
-      builder: (context, state) => const ProfileScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.settings,
-      builder: (context, state) => const SettingsScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.payments,
-      builder: (context, state) => const PaymentsScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.contracts,
-      builder: (context, state) => const ContractsScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.maintenance,
-      builder: (context, state) => const MaintenanceScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.reports,
-      builder: (context, state) => const ReportsScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.notifications,
-      builder: (context, state) => const NotificationsScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.requests,
-      builder: (context, state) => const RequestsScreen(),
-    ),
-    GoRoute(
-      path: AppRoutes.about,
-      builder: (context, state) => const AboutScreen(),
-    ),
+    GoRoute(path: AppRoutes.profile, builder: (_, __) => const ProfileScreen()),
+    GoRoute(path: AppRoutes.settings, builder: (_, __) => const SettingsScreen()),
+    GoRoute(path: AppRoutes.payments, builder: (_, __) => const PaymentsScreen()),
+    GoRoute(path: AppRoutes.contracts, builder: (_, __) => const ContractsScreen()),
+    GoRoute(path: AppRoutes.maintenance, builder: (_, __) => const MaintenanceScreen()),
+    GoRoute(path: AppRoutes.reports, builder: (_, __) => const ReportsScreen()),
+    GoRoute(path: AppRoutes.notifications, builder: (_, __) => const NotificationsScreen()),
+    GoRoute(path: AppRoutes.requests, builder: (_, __) => const RequestsScreen()),
+    GoRoute(path: AppRoutes.about, builder: (_, __) => const AboutScreen()),
   ],
 );

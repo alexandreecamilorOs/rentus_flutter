@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'core/router/app_router.dart';
@@ -6,7 +7,7 @@ import 'core/theme/app_theme.dart';
 import 'presentation/components/global_animated_shell.dart';
 
 void main() {
-  runApp(const RentusApp());
+  runApp(const ProviderScope(child: RentusApp()));
 }
 
 class RentusApp extends StatelessWidget {
