@@ -19,7 +19,7 @@ class HomeNavbar extends StatefulWidget {
 
   const HomeNavbar({
     super.key,
-    this.selectedTab = "Inicio",
+    this.selectedTab = 'Inicio',
     this.onNavigateHome,
     this.onNavigateProperties,
     this.onNavigateAbout,
@@ -40,93 +40,85 @@ class HomeNavbar extends StatefulWidget {
 
 class _HomeNavbarState extends State<HomeNavbar> {
   void _showMenu(BuildContext context) {
-    ResponsiveConfig.init(context);
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFFFAFAFA),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(ResponsiveConfig.getProportionateScreenWidth(20)),
-        ),
-      ),
+      backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) {
         final menuItems = [
-          {"label": "Mi Perfil", "icon": Icons.person, "action": widget.onNavigateProfile},
-          {"label": "Notificaciones", "icon": Icons.notifications, "action": widget.onNavigateNotifications},
-          {"label": "Contratos", "icon": Icons.apartment, "action": widget.onNavigateContracts},
-          {"label": "Pagos", "icon": Icons.payments, "action": widget.onNavigatePayments},
-          {"label": "Mantenimiento", "icon": Icons.build, "action": widget.onNavigateMaintenance},
-          {"label": "Solicitudes (Dueño)", "icon": Icons.description, "action": widget.onNavigateRequests},
-          {"label": "Mis Solicitudes", "icon": Icons.sms, "action": widget.onNavigateMyRequests},
-          {"label": "Mis Reportes", "icon": Icons.flag, "action": widget.onNavigateMyReports},
-          {"label": "Ajustes", "icon": Icons.settings, "action": widget.onNavigateSettings},
+          {'label': 'Mi Perfil', 'icon': Icons.person, 'action': widget.onNavigateProfile},
+          {'label': 'Notificaciones', 'icon': Icons.notifications, 'action': widget.onNavigateNotifications},
+          {'label': 'Contratos', 'icon': Icons.apartment, 'action': widget.onNavigateContracts},
+          {'label': 'Pagos', 'icon': Icons.payments, 'action': widget.onNavigatePayments},
+          {'label': 'Mantenimiento', 'icon': Icons.build, 'action': widget.onNavigateMaintenance},
+          {'label': 'Solicitudes (Dueño)', 'icon': Icons.description, 'action': widget.onNavigateRequests},
+          {'label': 'Mis Solicitudes', 'icon': Icons.sms, 'action': widget.onNavigateMyRequests},
+          {'label': 'Mis Reportes', 'icon': Icons.flag, 'action': widget.onNavigateMyReports},
+          {'label': 'Ajustes', 'icon': Icons.settings, 'action': widget.onNavigateSettings},
         ];
 
-        return Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: ResponsiveConfig.getProportionateScreenWidth(18),
-            vertical: ResponsiveConfig.getProportionateScreenHeight(16),
+        return Container(
+          margin: EdgeInsets.all(ResponsiveConfig.adaptiveSpacing(mobile: 12)),
+          padding: ResponsiveConfig.adaptivePadding(horizontal: 18, vertical: 16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEDE8E2).withOpacity(0.82),
+            borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(24)),
+            border: Border.all(color: Colors.white.withOpacity(0.4)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Opciones",
+                'Opciones',
                 style: TextStyle(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.4,
                   fontSize: ResponsiveConfig.fontSize(20),
                   color: const Color(0xFF2C3E50),
                 ),
               ),
               SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(16)),
-              ...menuItems.map((item) {
-                return InkWell(
-                  borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(12)),
-                  splashColor: const Color(0xFFDA9C5F).withOpacity(0.2),
-                  onTap: () {
-                    Navigator.pop(context);
-                    if (item['action'] != null) {
-                      (item['action'] as VoidCallback)();
-                    }
-                  },
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      vertical: ResponsiveConfig.getProportionateScreenHeight(12),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: ResponsiveConfig.getProportionateScreenWidth(36),
-                          height: ResponsiveConfig.getProportionateScreenWidth(36),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF3E3D0),
-                            borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(10)),
-                          ),
-                          child: Icon(
-                            item['icon'] as IconData,
-                            color: const Color(0xFF3B251D),
-                            size: ResponsiveConfig.getProportionateScreenWidth(20),
-                          ),
-                        ),
-                        SizedBox(width: ResponsiveConfig.getProportionateScreenWidth(12)),
-                        Flexible(
-                          child: Text(
-                            item['label'] as String,
-                            style: TextStyle(
-                              color: const Color(0xFF2C3E50),
-                              fontSize: ResponsiveConfig.fontSize(15),
-                              fontWeight: FontWeight.w500,
+              ...menuItems.map((item) => InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                      (item['action'] as VoidCallback?)?.call();
+                    },
+                    borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(14)),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: ResponsiveConfig.getProportionateScreenHeight(10),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: ResponsiveConfig.getProportionateScreenWidth(36),
+                            height: ResponsiveConfig.getProportionateScreenWidth(36),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF3E3D0),
+                              borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(10)),
+                            ),
+                            child: Icon(
+                              item['icon'] as IconData,
+                              color: const Color(0xFF3B251D),
+                              size: ResponsiveConfig.getProportionateScreenWidth(20),
                             ),
                           ),
-                        ),
-                      ],
+                          SizedBox(width: ResponsiveConfig.getProportionateScreenWidth(12)),
+                          Expanded(
+                            child: Text(
+                              item['label'] as String,
+                              style: TextStyle(
+                                color: const Color(0xFF2C3E50),
+                                fontSize: ResponsiveConfig.fontSize(15),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              }),
-              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                  )),
             ],
           ),
         );
@@ -136,27 +128,30 @@ class _HomeNavbarState extends State<HomeNavbar> {
 
   @override
   Widget build(BuildContext context) {
-    ResponsiveConfig.init(context);
-    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final navbarHeight = ResponsiveConfig.byBreakpoint<double>(
+      smallMobile: 80,
+      mobile: 86,
+      tablet: 96,
+    );
 
     return Container(
-      height: isLandscape
-          ? ResponsiveConfig.getProportionateScreenHeight(96)
-          : ResponsiveConfig.getProportionateScreenHeight(86),
+      height: ResponsiveConfig.getProportionateScreenHeight(navbarHeight),
+      margin: EdgeInsets.symmetric(horizontal: ResponsiveConfig.adaptiveSpacing(mobile: 8)),
+      padding: ResponsiveConfig.adaptivePadding(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(ResponsiveConfig.getProportionateScreenWidth(24)),
-          topRight: Radius.circular(ResponsiveConfig.getProportionateScreenWidth(24)),
-        ),
+        borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(24)),
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [Color(0xCC3B251D), Color(0xD92E1D17)],
         ),
-      ),
-      padding: EdgeInsets.symmetric(
-        horizontal: ResponsiveConfig.getProportionateScreenWidth(14),
-        vertical: ResponsiveConfig.getProportionateScreenHeight(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.22),
+            blurRadius: ResponsiveConfig.getProportionateScreenWidth(22),
+            offset: Offset(0, ResponsiveConfig.getProportionateScreenHeight(8)),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -164,29 +159,31 @@ class _HomeNavbarState extends State<HomeNavbar> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _MorphingNavItem(label: "Inicio", icon: Icons.home, selected: widget.selectedTab == "Inicio", onClick: widget.onNavigateHome),
-                _MorphingNavItem(label: "Propiedades", icon: Icons.apartment, selected: widget.selectedTab == "Propiedades", onClick: widget.onNavigateProperties),
-                _MorphingNavItem(label: "Nosotros", icon: Icons.groups, selected: widget.selectedTab == "Nosotros", onClick: widget.onNavigateAbout),
+                _MorphingNavItem(
+                  label: 'Inicio',
+                  icon: Icons.home,
+                  selected: widget.selectedTab == 'Inicio',
+                  onClick: widget.onNavigateHome,
+                ),
+                _MorphingNavItem(
+                  label: 'Propiedades',
+                  icon: Icons.apartment,
+                  selected: widget.selectedTab == 'Propiedades',
+                  onClick: widget.onNavigateProperties,
+                ),
+                _MorphingNavItem(
+                  label: 'Nosotros',
+                  icon: Icons.groups,
+                  selected: widget.selectedTab == 'Nosotros',
+                  onClick: widget.onNavigateAbout,
+                ),
               ],
             ),
           ),
-          Material(
-            color: Colors.transparent,
-            shape: const CircleBorder(),
-            child: InkWell(
-              onTap: () => _showMenu(context),
-              customBorder: const CircleBorder(),
-              splashColor: Colors.white.withOpacity(0.2),
-              child: Container(
-                width: ResponsiveConfig.getProportionateScreenWidth(42),
-                height: ResponsiveConfig.getProportionateScreenWidth(42),
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(colors: [Color(0xFFDA9C5F), Color(0xFF8A5D34)]),
-                ),
-                child: Icon(Icons.menu, color: Colors.white, size: ResponsiveConfig.getProportionateScreenWidth(24)),
-              ),
-            ),
+          _WaveIconButton(
+            icon: Icons.menu,
+            onTap: () => _showMenu(context),
+            gradient: const [Color(0xFFDA9C5F), Color(0xFF8A5D34)],
           ),
         ],
       ),
@@ -200,7 +197,12 @@ class _MorphingNavItem extends StatefulWidget {
   final bool selected;
   final VoidCallback? onClick;
 
-  const _MorphingNavItem({required this.label, required this.icon, required this.selected, this.onClick});
+  const _MorphingNavItem({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    this.onClick,
+  });
 
   @override
   State<_MorphingNavItem> createState() => _MorphingNavItemState();
@@ -211,86 +213,144 @@ class _MorphingNavItemState extends State<_MorphingNavItem> {
 
   @override
   Widget build(BuildContext context) {
-    ResponsiveConfig.init(context);
-    final scale = _isPressed ? 0.92 : (widget.selected ? 1.08 : 1.0);
-    final iconTint = widget.selected ? const Color(0xFFDA9C5F) : Colors.white.withOpacity(0.78);
-    final bubbleWidth = widget.selected
-        ? ResponsiveConfig.getProportionateScreenWidth(52)
-        : ResponsiveConfig.getProportionateScreenWidth(38);
+    final bubbleWidth = widget.selected ? 52.0 : 38.0;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTapDown: (_) => setState(() => _isPressed = true),
-        onTapUp: (_) {
-          setState(() => _isPressed = false);
-          widget.onClick?.call();
-        },
-        onTapCancel: () => setState(() => _isPressed = false),
-        borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(24)),
-        splashColor: const Color(0xFFFFD59A).withOpacity(0.24),
-        child: AnimatedScale(
-          scale: scale,
-          duration: const Duration(milliseconds: 150),
-          curve: Curves.easeOutBack,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.fastOutSlowIn,
-                width: bubbleWidth,
-                height: ResponsiveConfig.getProportionateScreenHeight(34),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(17)),
-                  gradient: widget.selected
-                      ? const LinearGradient(colors: [Color(0x99DA9C5F), Color(0x663B251D)])
-                      : const LinearGradient(colors: [Colors.transparent, Colors.transparent]),
-                ),
-                child: Center(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    child: Icon(
-                      widget.icon,
-                      key: ValueKey<bool>(widget.selected),
-                      color: widget.selected ? const Color(0xFFFFE7C7) : iconTint,
-                      size: widget.selected
-                          ? ResponsiveConfig.getProportionateScreenWidth(24)
-                          : ResponsiveConfig.getProportionateScreenWidth(22),
-                    ),
-                  ),
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) {
+        setState(() => _isPressed = false);
+        widget.onClick?.call();
+      },
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: AnimatedScale(
+        scale: _isPressed ? 0.93 : (widget.selected ? 1.08 : 1),
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOutBack,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _WaveIconButton(
+              icon: widget.icon,
+              selected: widget.selected,
+              width: bubbleWidth,
+              height: 34,
+              onTap: widget.onClick,
+              gradient: widget.selected
+                  ? const [Color(0x99DA9C5F), Color(0x663B251D)]
+                  : const [Colors.transparent, Colors.transparent],
+            ),
+            SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(2)),
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 200),
+              opacity: widget.selected ? 1 : 0,
+              child: Text(
+                widget.label,
+                style: TextStyle(
+                  color: const Color(0xFFFFE7C7),
+                  fontSize: ResponsiveConfig.fontSize(10),
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(2)),
-              if (widget.selected)
-                AnimatedOpacity(
-                  duration: const Duration(milliseconds: 200),
-                  opacity: widget.selected ? 1.0 : 0.0,
-                  child: Text(
-                    widget.label,
-                    style: TextStyle(
-                      color: const Color(0xFFFFE7C7),
-                      fontSize: ResponsiveConfig.fontSize(10),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(2)),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                width: widget.selected
-                    ? ResponsiveConfig.getProportionateScreenWidth(20)
-                    : ResponsiveConfig.getProportionateScreenWidth(6),
-                height: ResponsiveConfig.getProportionateScreenHeight(3),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(1.5)),
-                  gradient: widget.selected
-                      ? const LinearGradient(colors: [Color(0xFFFFD59A), Color(0xFFDA9C5F)])
-                      : const LinearGradient(colors: [Colors.transparent, Colors.transparent]),
-                ),
-              ),
-            ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WaveIconButton extends StatefulWidget {
+  final IconData icon;
+  final VoidCallback? onTap;
+  final bool selected;
+  final double width;
+  final double height;
+  final List<Color> gradient;
+
+  const _WaveIconButton({
+    required this.icon,
+    required this.gradient,
+    this.onTap,
+    this.selected = false,
+    this.width = 42,
+    this.height = 42,
+  });
+
+  @override
+  State<_WaveIconButton> createState() => _WaveIconButtonState();
+}
+
+class _WaveIconButtonState extends State<_WaveIconButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 240),
+        width: ResponsiveConfig.getProportionateScreenWidth(widget.width),
+        height: ResponsiveConfig.getProportionateScreenHeight(widget.height),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(18)),
+          gradient: LinearGradient(
+            colors: widget.gradient,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                final center = (_controller.value * 1.4) - 0.2;
+                final leftStop = (center - 0.28).clamp(0.0, 1.0);
+                final middleStop = center.clamp(0.0, 1.0);
+                final rightStop = (center + 0.28).clamp(0.0, 1.0);
+
+                return Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: const [
+                          Colors.transparent,
+                          Color(0xAAFFD84D),
+                          Colors.transparent,
+                        ],
+                        stops: [leftStop, middleStop, rightStop],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            Icon(
+              widget.icon,
+              color: widget.selected ? const Color(0xFFFFE7C7) : Colors.white.withOpacity(0.82),
+              size: ResponsiveConfig.getProportionateScreenWidth(widget.selected ? 24 : 22),
+            ),
+          ],
         ),
       ),
     );

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../core/responsive_config.dart';
 import '../../core/theme/app_colors.dart';
 
 class AuthInputField extends StatefulWidget {
@@ -37,11 +39,7 @@ class _AuthInputFieldState extends State<AuthInputField> {
     super.initState();
     _controller = TextEditingController(text: widget.value);
     _focusNode = FocusNode();
-    _focusNode.addListener(() {
-      setState(() {
-        _isFocused = _focusNode.hasFocus;
-      });
-    });
+    _focusNode.addListener(() => setState(() => _isFocused = _focusNode.hasFocus));
   }
 
   @override
@@ -61,78 +59,82 @@ class _AuthInputFieldState extends State<AuthInputField> {
 
   @override
   Widget build(BuildContext context) {
-    final bool hasError = widget.error != null && widget.error!.isNotEmpty;
-
-    final Color containerColor = hasError
-        ? AppColors.error.withOpacity(0.08)
+    final hasError = widget.error != null && widget.error!.isNotEmpty;
+    final gradient = hasError
+        ? const [Color(0x66EF4444), Color(0x99EF4444)]
         : _isFocused
-            ? AppColors.white
-            : AppColors.inputBg;
-
-    final Color borderColor = hasError
-        ? AppColors.error
-        : _isFocused
-            ? AppColors.primary
-            : AppColors.border;
+            ? const [Color(0xAAFFD672), Color(0xAA7D512E)]
+            : const [Color(0x66FFFFFF), Color(0x22FFFFFF)];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: EdgeInsets.symmetric(
+        vertical: ResponsiveConfig.getProportionateScreenHeight(8),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.fastOutSlowIn,
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeInOut,
+            padding: EdgeInsets.all(ResponsiveConfig.getProportionateScreenWidth(1.2)),
             decoration: BoxDecoration(
-              color: containerColor,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                  color: borderColor, width: _isFocused || hasError ? 2 : 1),
+              borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(16)),
+              gradient: LinearGradient(colors: gradient),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.15),
+                  blurRadius: ResponsiveConfig.getProportionateScreenWidth(18),
+                  offset: Offset(0, ResponsiveConfig.getProportionateScreenHeight(8)),
+                ),
+              ],
             ),
-            child: TextField(
-              controller: _controller,
-              focusNode: _focusNode,
-              onChanged: widget.onValueChange,
-              obscureText: widget.isPassword && !widget.isPasswordVisible,
-              style: const TextStyle(color: AppColors.textPrimary),
-              decoration: InputDecoration(
-                labelText: widget.label,
-                labelStyle: TextStyle(
-                  color: hasError ? AppColors.error : AppColors.textSecondary,
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF2A1D18).withOpacity(_isFocused ? 0.72 : 0.58),
+                borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(15)),
+              ),
+              child: TextField(
+                controller: _controller,
+                focusNode: _focusNode,
+                onChanged: widget.onValueChange,
+                obscureText: widget.isPassword && !widget.isPasswordVisible,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: widget.label,
+                  labelStyle: TextStyle(
+                    color: hasError ? AppColors.error : const Color(0xFFEADFCF),
+                    fontSize: ResponsiveConfig.fontSize(14),
+                  ),
+                  prefixIcon: Icon(widget.leadingIcon, color: const Color(0xFFEADFCF)),
+                  suffixIcon: widget.isPassword
+                      ? IconButton(
+                          icon: Icon(
+                            widget.isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                            color: const Color(0xFFEADFCF),
+                          ),
+                          onPressed: widget.onTogglePasswordVisibility,
+                        )
+                      : null,
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: ResponsiveConfig.getProportionateScreenWidth(16),
+                    vertical: ResponsiveConfig.getProportionateScreenHeight(15),
+                  ),
                 ),
-                prefixIcon: Icon(
-                  widget.leadingIcon,
-                  color: AppColors.textSecondary,
-                ),
-                suffixIcon: widget.isPassword
-                    ? IconButton(
-                        icon: Icon(
-                          widget.isPasswordVisible
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: AppColors.textSecondary,
-                        ),
-                        onPressed: widget.onTogglePasswordVisibility,
-                      )
-                    : null,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                errorBorder: InputBorder.none,
-                disabledBorder: InputBorder.none,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               ),
             ),
           ),
           if (hasError)
             Padding(
-              padding: const EdgeInsets.only(top: 4, left: 16),
+              padding: EdgeInsets.only(
+                top: ResponsiveConfig.getProportionateScreenHeight(4),
+                left: ResponsiveConfig.getProportionateScreenWidth(16),
+              ),
               child: Text(
                 widget.error!,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.error,
-                  fontSize: 12,
+                  fontSize: ResponsiveConfig.fontSize(12),
                 ),
               ),
             ),

@@ -22,9 +22,10 @@ class AuthButton extends StatefulWidget {
 }
 
 class _AuthButtonState extends State<AuthButton>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _glowController;
   late Animation<double> _glowAnimation;
+  late AnimationController _waveController;
   bool _isPressed = false;
 
   @override
@@ -34,15 +35,20 @@ class _AuthButtonState extends State<AuthButton>
       vsync: this,
       duration: const Duration(milliseconds: 1800),
     )..repeat(reverse: false);
-
     _glowAnimation = Tween<double>(begin: -0.5, end: 1.5).animate(
       CurvedAnimation(parent: _glowController, curve: Curves.fastOutSlowIn),
     );
+
+    _waveController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
   }
 
   @override
   void dispose() {
     _glowController.dispose();
+    _waveController.dispose();
     super.dispose();
   }
 
@@ -67,96 +73,121 @@ class _AuthButtonState extends State<AuthButton>
 
   @override
   Widget build(BuildContext context) {
-    ResponsiveConfig.init(context);
-    final double scale = _isPressed ? 0.98 : 1.0;
     final bool isDisabled = !widget.enabled || widget.isLoading;
+    final radius = BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(16));
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTapDown: _handleTapDown,
-        onTapUp: _handleTapUp,
-        onTapCancel: _handleTapCancel,
-        borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(16)),
-        splashColor: Colors.white.withOpacity(0.25),
-        highlightColor: Colors.white.withOpacity(0.08),
-        child: AnimatedScale(
-          scale: scale,
-          duration: const Duration(milliseconds: 150),
-          curve: Curves.easeOutBack,
-          child: Container(
-            width: double.infinity,
-            height: ResponsiveConfig.getProportionateScreenHeight(56),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(16)),
-              color: isDisabled ? AppColors.primaryDark.withOpacity(0.4) : null,
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Stack(
-              children: [
-                if (!isDisabled)
-                  AnimatedBuilder(
-                    animation: _glowAnimation,
-                    builder: (context, child) {
-                      return Positioned.fill(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: const [
-                                AppColors.primaryDark,
-                                AppColors.primary,
-                                Color(0xFF7D512E),
-                                AppColors.primaryDark,
-                              ],
-                              stops: [
-                                0.0,
-                                _glowAnimation.value - 0.2,
-                                _glowAnimation.value,
-                                _glowAnimation.value + 0.2,
-                              ].map((s) => s.clamp(0.0, 1.0)).toList(),
-                            ),
-                          ),
+    return GestureDetector(
+      onTapDown: _handleTapDown,
+      onTapUp: _handleTapUp,
+      onTapCancel: _handleTapCancel,
+      child: AnimatedScale(
+        scale: _isPressed ? 0.98 : 1,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOutBack,
+        child: Container(
+          width: double.infinity,
+          height: ResponsiveConfig.getProportionateScreenHeight(56),
+          decoration: BoxDecoration(
+            borderRadius: radius,
+            color: isDisabled ? AppColors.primaryDark.withOpacity(0.4) : null,
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0x663A2219),
+                blurRadius: ResponsiveConfig.getProportionateScreenWidth(26),
+                offset: Offset(0, ResponsiveConfig.getProportionateScreenHeight(10)),
+              ),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            children: [
+              if (!isDisabled)
+                AnimatedBuilder(
+                  animation: _glowAnimation,
+                  builder: (context, child) {
+                    return DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: const [
+                            AppColors.primaryDark,
+                            AppColors.primary,
+                            Color(0xFF7D512E),
+                            AppColors.primaryDark,
+                          ],
+                          stops: [
+                            0,
+                            (_glowAnimation.value - 0.2).clamp(0.0, 1.0),
+                            _glowAnimation.value.clamp(0.0, 1.0),
+                            (_glowAnimation.value + 0.2).clamp(0.0, 1.0),
+                          ],
                         ),
-                      );
-                    },
-                  ),
-                Center(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: widget.isLoading
-                        ? SizedBox(
-                            width: ResponsiveConfig.getProportionateScreenWidth(18),
-                            height: ResponsiveConfig.getProportionateScreenWidth(18),
-                            child: const CircularProgressIndicator(
-                              color: AppColors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                widget.text,
-                                style: TextStyle(
-                                  color: AppColors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: ResponsiveConfig.fontSize(16),
-                                ),
-                              ),
-                              SizedBox(width: ResponsiveConfig.getProportionateScreenWidth(6)),
-                              Icon(
-                                Icons.arrow_forward,
-                                color: AppColors.white,
-                                size: ResponsiveConfig.getProportionateScreenWidth(20),
-                              ),
-                            ],
-                          ),
-                  ),
+                      ),
+                    );
+                  },
                 ),
-              ],
-            ),
+              Positioned.fill(
+                child: AnimatedBuilder(
+                  animation: _waveController,
+                  builder: (context, child) {
+                    final center = (_waveController.value * 1.4) - 0.2;
+                    final leftStop = (center - 0.28).clamp(0.0, 1.0);
+                    final middleStop = center.clamp(0.0, 1.0);
+                    final rightStop = (center + 0.28).clamp(0.0, 1.0);
+
+                    return DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: const [
+                            Colors.transparent,
+                            Color(0xB3FFD84D),
+                            Colors.transparent,
+                          ],
+                          stops: [leftStop, middleStop, rightStop],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              Center(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: widget.isLoading
+                      ? SizedBox(
+                          width: ResponsiveConfig.getProportionateScreenWidth(18),
+                          height: ResponsiveConfig.getProportionateScreenWidth(18),
+                          child: const CircularProgressIndicator(
+                            color: AppColors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              widget.text,
+                              style: TextStyle(
+                                color: AppColors.white,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.7,
+                                fontSize: ResponsiveConfig.fontSize(16),
+                              ),
+                            ),
+                            SizedBox(width: ResponsiveConfig.getProportionateScreenWidth(6)),
+                            Icon(
+                              Icons.arrow_forward,
+                              color: AppColors.white,
+                              size: ResponsiveConfig.getProportionateScreenWidth(20),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

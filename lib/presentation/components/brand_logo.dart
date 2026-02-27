@@ -8,21 +8,52 @@ class BrandLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ResponsiveConfig.init(context);
-
     return Row(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
-          width: ResponsiveConfig.getProportionateScreenWidth(40),
-          height: ResponsiveConfig.getProportionateScreenWidth(40),
-          decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-          child: Icon(Icons.real_estate_agent, color: AppColors.white, size: ResponsiveConfig.getProportionateScreenWidth(24)),
+          width: ResponsiveConfig.getProportionateScreenWidth(42),
+          height: ResponsiveConfig.getProportionateScreenWidth(42),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: const LinearGradient(
+              colors: [Color(0xFFFFE39A), AppColors.primary],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xAA4D2F24),
+                blurRadius: ResponsiveConfig.getProportionateScreenWidth(18),
+                offset: Offset(0, ResponsiveConfig.getProportionateScreenHeight(8)),
+              ),
+            ],
+          ),
+          child: Icon(
+            Icons.real_estate_agent,
+            color: AppColors.white,
+            size: ResponsiveConfig.getProportionateScreenWidth(24),
+          ),
         ),
         SizedBox(width: ResponsiveConfig.getProportionateScreenWidth(8)),
-        Text('Rent', style: TextStyle(fontWeight: FontWeight.w800, fontSize: ResponsiveConfig.fontSize(30), color: Colors.black, letterSpacing: -0.5)),
-        Text('Us', style: TextStyle(fontWeight: FontWeight.w800, fontSize: ResponsiveConfig.fontSize(30), color: AppColors.primary, letterSpacing: -0.5)),
+        Text(
+          'Rent',
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            fontSize: ResponsiveConfig.fontSize(30),
+            letterSpacing: -0.6,
+            color: Colors.white,
+          ),
+        ),
+        Text(
+          'Us',
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            fontSize: ResponsiveConfig.fontSize(30),
+            letterSpacing: -0.6,
+            color: const Color(0xFFFFD672),
+          ),
+        ),
       ],
     );
   }

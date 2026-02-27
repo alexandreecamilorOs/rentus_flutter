@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import '../../core/responsive_config.dart';
@@ -14,25 +16,25 @@ class AuthModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ResponsiveConfig.init(context);
-
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.98),
-        borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(24)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: ResponsiveConfig.getProportionateScreenWidth(24),
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(24)),
-        child: Padding(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(24)),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          width: double.infinity,
           padding: padding,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.16),
+            borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(24)),
+            border: Border.all(color: Colors.white.withOpacity(0.35)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.16),
+                blurRadius: ResponsiveConfig.getProportionateScreenWidth(32),
+                offset: Offset(0, ResponsiveConfig.getProportionateScreenHeight(14)),
+              ),
+            ],
+          ),
           child: child,
         ),
       ),
