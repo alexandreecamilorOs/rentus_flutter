@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 
 /// Capa global animada para todas las vistas.
 ///
-/// Mantiene los colores base de cada pantalla y solo añade movimiento sutil
-/// (glows, degradados y partículas) para un look más llamativo sin romper
-/// la UI existente.
+/// - Mantiene la paleta existente.
+/// - Añade movimiento suave (glows + partículas).
+/// - Aplica responsive global (padding, maxWidth y adaptación para tablet).
 class GlobalAnimatedShell extends StatefulWidget {
   final Widget child;
 
@@ -25,7 +25,7 @@ class _GlobalAnimatedShellState extends State<GlobalAnimatedShell>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 10),
+      duration: const Duration(seconds: 11),
     )..repeat(reverse: true);
   }
 
@@ -37,46 +37,82 @@ class _GlobalAnimatedShellState extends State<GlobalAnimatedShell>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, _) {
-        final t = Curves.easeInOutCubic.transform(_controller.value);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final isSmallMobile = width < 360;
+        final isTablet = width >= 600;
+        final horizontalPadding = isSmallMobile ? 8.0 : (isTablet ? 20.0 : 12.0);
+        final maxContentWidth = width >= 1200
+            ? 1080.0
+            : width >= 900
+                ? 860.0
+                : width >= 600
+                    ? 720.0
+                    : width;
 
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            // Overlay global con gradiente muy sutil para no invadir colores base.
-            IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment(-1 + (t * 0.5), -1),
-                    end: Alignment(1, 1 - (t * 0.4)),
-                    colors: [
-                      const Color(0x22DA9C5F),
-                      const Color(0x1116B8C9),
-                      Colors.transparent,
-                    ],
-                    stops: const [0.0, 0.55, 1.0],
+        return AnimatedBuilder(
+          animation: _controller,
+          builder: (context, _) {
+            final t = Curves.easeInOutCubic.transform(_controller.value);
+
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment(-1 + (t * 0.6), -1),
+                        end: Alignment(1, 1 - (t * 0.45)),
+                        colors: const [
+                          Color(0x2ADA9C5F),
+                          Color(0x1616B8C9),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.58, 1.0],
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            IgnorePointer(
-              child: CustomPaint(
-                painter: _GlobalParticlesPainter(phase: _controller.value),
-              ),
-            ),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 380),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeInCubic,
-              child: KeyedSubtree(
-                key: ValueKey<String>(widget.child.runtimeType.toString()),
-                child: widget.child,
-              ),
-            ),
-          ],
+                IgnorePointer(
+                  child: CustomPaint(
+                    painter: _GlobalParticlesPainter(phase: _controller.value),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: maxContentWidth),
+                      child: TweenAnimationBuilder<double>(
+                        duration: const Duration(milliseconds: 420),
+                        tween: Tween(begin: 0.985, end: 1.0),
+                        curve: Curves.easeOutCubic,
+                        builder: (context, scale, child) => Transform.scale(
+                          scale: scale,
+                          child: child,
+                        ),
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 380),
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.easeInCubic,
+                          child: KeyedSubtree(
+                            key: ValueKey<String>(widget.child.runtimeType.toString()),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(isTablet ? 22 : 0),
+                              child: widget.child,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -93,18 +129,18 @@ class _GlobalParticlesPainter extends CustomPainter {
     final paint = Paint()..style = PaintingStyle.fill;
     final random = math.Random(37);
 
-    for (int i = 0; i < 22; i++) {
+    for (int i = 0; i < 28; i++) {
       final baseX = random.nextDouble() * size.width;
       final baseY = random.nextDouble() * size.height;
-      final driftX = (random.nextDouble() - 0.5) * 52;
-      final driftY = (random.nextDouble() - 0.5) * 30;
-      final radius = 1.2 + random.nextDouble() * 3.6;
+      final driftX = (random.nextDouble() - 0.5) * 62;
+      final driftY = (random.nextDouble() - 0.5) * 36;
+      final radius = 1.1 + random.nextDouble() * 3.8;
 
       final x = (baseX + (phase * driftX)) % size.width;
       final y = (baseY + (phase * driftY)) % size.height;
 
       paint.color = i.isEven
-          ? const Color(0x2EFFF3E4)
+          ? const Color(0x30FFF3E4)
           : const Color(0x26FFD59A);
 
       canvas.drawCircle(Offset(x, y), radius, paint);
