@@ -1,5 +1,8 @@
-import 'package:flutter/material.dart';
 import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+
+import '../../core/responsive_config.dart';
 
 class AppActionButton extends StatefulWidget {
   final String text;
@@ -20,9 +23,8 @@ class AppActionButton extends StatefulWidget {
       Color(0xFF16B8C9),
       Color(0xFF9D7BFF)
     ],
-    this.paddingValues =
-        const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-    this.animationSeed = 101, // Valor por defecto
+    this.paddingValues = const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    this.animationSeed = 101,
   });
 
   @override
@@ -30,27 +32,34 @@ class AppActionButton extends StatefulWidget {
 }
 
 class _AppActionButtonState extends State<AppActionButton>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   bool _isPressed = false;
-  late AnimationController _controller;
+  late AnimationController _bubbleController;
+  late AnimationController _waveController;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    _bubbleController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 3000),
+    )..repeat(reverse: true);
+
+    _waveController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
     )..repeat(reverse: true);
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _bubbleController.dispose();
+    _waveController.dispose();
     super.dispose();
   }
 
-  void _handleTapDown(TapDownDetails details) =>
-      setState(() => _isPressed = true);
+  void _handleTapDown(TapDownDetails details) => setState(() => _isPressed = true);
+
   void _handleTapUp(TapUpDetails details) {
     setState(() => _isPressed = false);
     widget.onClick();
@@ -60,41 +69,51 @@ class _AppActionButtonState extends State<AppActionButton>
 
   @override
   Widget build(BuildContext context) {
-    final scale = _isPressed ? 0.98 : 1.0;
+    final borderRadius = BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(16));
 
     return GestureDetector(
       onTapDown: _handleTapDown,
       onTapUp: _handleTapUp,
       onTapCancel: _handleTapCancel,
       child: AnimatedScale(
-        scale: scale,
-        duration: const Duration(milliseconds: 100),
+        scale: _isPressed ? 0.98 : 1,
+        duration: const Duration(milliseconds: 130),
         child: Container(
           width: double.infinity,
-          height: 52,
+          height: ResponsiveConfig.getProportionateScreenHeight(52),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: borderRadius,
             gradient: LinearGradient(
               colors: widget.gradient,
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xAA6B3FC9).withOpacity(0.28),
+                blurRadius: ResponsiveConfig.getProportionateScreenWidth(28),
+                offset: Offset(0, ResponsiveConfig.getProportionateScreenHeight(12)),
+              ),
+            ],
           ),
           clipBehavior: Clip.antiAlias,
           child: Stack(
             children: [
               Positioned.fill(
                 child: AnimatedBuilder(
-                  animation: _controller,
+                  animation: _bubbleController,
                   builder: (context, child) {
                     return CustomPaint(
                       painter: _BubblePainter(
-                        phase: _controller.value,
+                        phase: _bubbleController.value,
                         seed: widget.animationSeed,
                       ),
                     );
                   },
                 ),
+              ),
+              Positioned.fill(
+                child: _YellowWaveOverlay(animation: _waveController),
               ),
               Center(
                 child: Padding(
@@ -104,6 +123,8 @@ class _AppActionButtonState extends State<AppActionButton>
                     style: TextStyle(
                       color: widget.contentColor,
                       fontWeight: FontWeight.bold,
+                      letterSpacing: 0.6,
+                      fontSize: ResponsiveConfig.fontSize(16),
                     ),
                   ),
                 ),
@@ -112,6 +133,41 @@ class _AppActionButtonState extends State<AppActionButton>
           ),
         ),
       ),
+    );
+  }
+}
+
+class _YellowWaveOverlay extends StatelessWidget {
+  final Animation<double> animation;
+
+  const _YellowWaveOverlay({required this.animation});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) {
+        final wave = Curves.easeInOutCubic.transform(animation.value);
+        final center = 0.2 + (0.6 * wave);
+        final leftStop = (center - 0.3).clamp(0.0, 1.0);
+        final middleStop = center.clamp(0.0, 1.0);
+        final rightStop = (center + 0.3).clamp(0.0, 1.0);
+
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                Colors.transparent,
+                const Color(0x99FFD84D),
+                Colors.transparent,
+              ],
+              stops: [leftStop, middleStop, rightStop],
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -127,26 +183,20 @@ class _BubblePainter extends CustomPainter {
     final paint = Paint()..style = PaintingStyle.fill;
     final rand = math.Random(seed);
 
-    // Dibujamos burbujas animadas
     for (int i = 0; i < 20; i++) {
       final originX = rand.nextDouble() * size.width;
       final originY = rand.nextDouble() * size.height;
       final radius = 1.0 + rand.nextDouble() * 2.5;
       final speedX = (rand.nextDouble() - 0.5) * 40;
       final speedY = (rand.nextDouble() - 0.5) * 20;
-
       final x = (originX + phase * speedX) % size.width;
       final y = (originY + phase * speedY) % size.height;
 
-      final alpha = (0.08 + rand.nextDouble() * 0.35).clamp(0.0, 1.0);
-      paint.color = Colors.white.withOpacity(alpha);
-
+      paint.color = Colors.white.withOpacity((0.08 + rand.nextDouble() * 0.35).clamp(0.0, 1.0));
       canvas.drawCircle(Offset(x, y), radius, paint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant _BubblePainter oldDelegate) {
-    return oldDelegate.phase != phase;
-  }
+  bool shouldRepaint(covariant _BubblePainter oldDelegate) => oldDelegate.phase != phase;
 }
