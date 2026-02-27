@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../data/providers/auth_provider.dart';
 import '../../../data/providers/entity_providers.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -22,6 +23,14 @@ class ProfileScreen extends ConsumerWidget {
             Text(user.phone ?? '-'),
             Text(user.address ?? '-'),
             Text('Rol: ${user.role ?? '-'}'),
+
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: () async {
+                await ref.read(authProvider.notifier).logout();
+              },
+              child: const Text('Cerrar sesión'),
+            ),
           ],
         ),
         loading: () => const Center(child: CircularProgressIndicator()),

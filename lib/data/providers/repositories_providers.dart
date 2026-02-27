@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../repositories/admin_repository.dart';
-import '../repositories/auth_repository.dart';
 import '../repositories/contract_repository.dart';
 import '../repositories/geocoding_repository.dart';
 import '../repositories/maintenance_repository.dart';
@@ -14,10 +13,10 @@ import '../repositories/rental_request_repository.dart';
 import '../repositories/report_repository.dart';
 import '../repositories/user_repository.dart';
 import '../services/api_client.dart';
+import 'auth_provider.dart';
 
-final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
+final apiClientProvider = Provider<ApiClient>((ref) => ApiClient(tokenStorage: ref.read(tokenStorageProvider), onRefreshToken: () => ref.read(authRepositoryProvider).refreshToken()));
 
-final authRepositoryProvider = Provider<AuthRepository>((ref) => AuthRepository());
 final propertyRepositoryProvider = Provider<PropertyRepository>((ref) => PropertyRepository(ref.read(apiClientProvider)));
 final rentalRequestRepositoryProvider = Provider<RentalRequestRepository>((ref) => RentalRequestRepository(ref.read(apiClientProvider)));
 final contractRepositoryProvider = Provider<ContractRepository>((ref) => ContractRepository(ref.read(apiClientProvider)));

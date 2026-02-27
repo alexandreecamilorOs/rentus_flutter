@@ -2,23 +2,48 @@ import 'package:dio/dio.dart';
 
 import '../../core/constants/api_constants.dart';
 import 'api_exceptions.dart';
+import 'token_storage.dart';
 
 class ApiClient {
-  ApiClient({Dio? dio}) : _dio = dio ?? Dio(BaseOptions(baseUrl: ApiConstants.baseUrl)) {
+  ApiClient({
+    required TokenStorage tokenStorage,
+    Future<String?> Function()? onRefreshToken,
+    Dio? dio,
+  })  : _dio = dio ?? Dio(BaseOptions(baseUrl: ApiConstants.baseUrl)),
+        _tokenStorage = tokenStorage,
+        _onRefreshToken = onRefreshToken {
     _dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
     _dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (options, handler) {
-          if (ApiConstants.demoJwt.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer ${ApiConstants.demoJwt}';
+        onRequest: (options, handler) async {
+          final stored = await _tokenStorage.readAccessToken();
+          final token = stored?.isNotEmpty == true ? stored : ApiConstants.demoJwt;
+          if (token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
           }
           handler.next(options);
         },
-        onError: (e, handler) {
+        onError: (e, handler) async {
           final statusCode = e.response?.statusCode;
           final message = e.response?.data is Map<String, dynamic>
               ? (e.response?.data['message']?.toString() ?? e.message)
               : e.message;
+
+          if (statusCode == 401 && _onRefreshToken != null && e.requestOptions.extra['retried'] != true) {
+            try {
+              final newToken = await _onRefreshToken!();
+              if (newToken != null && newToken.isNotEmpty) {
+                final retryOptions = e.requestOptions;
+                retryOptions.headers['Authorization'] = 'Bearer $newToken';
+                retryOptions.extra['retried'] = true;
+                final retryResponse = await _dio.fetch(retryOptions);
+                handler.resolve(retryResponse);
+                return;
+              }
+            } catch (_) {
+              // cae al manejo estándar
+            }
+          }
 
           if (statusCode == 401) {
             handler.reject(DioException(requestOptions: e.requestOptions, error: UnauthorizedException(message ?? 'No autorizado')));
@@ -39,6 +64,8 @@ class ApiClient {
   }
 
   final Dio _dio;
+  final TokenStorage _tokenStorage;
+  final Future<String?> Function()? _onRefreshToken;
 
   Future<dynamic> get(String path, {Map<String, dynamic>? queryParameters}) async {
     final response = await _dio.get(path, queryParameters: queryParameters);

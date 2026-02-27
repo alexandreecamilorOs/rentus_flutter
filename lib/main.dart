@@ -10,11 +10,13 @@ void main() {
   runApp(const ProviderScope(child: RentusApp()));
 }
 
-class RentusApp extends StatelessWidget {
+class RentusApp extends ConsumerWidget {
   const RentusApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(routerProvider);
+
     return ScreenUtilInit(
       designSize: const Size(390, 844),
       minTextAdapt: true,
