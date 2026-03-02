@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/user_model.dart';
@@ -37,6 +38,17 @@ class AuthState {
   static const initial = AuthState(status: AuthStatus.initial);
 }
 
+String _friendlyError(Object e) {
+  if (e is DioException && e.type == DioExceptionType.connectionError) {
+    return 'No se pudo conectar con el servidor. Verifica internet/CORS del backend.';
+  }
+  final msg = e.toString();
+  if (msg.contains('XMLHttpRequest') || msg.contains('connection error')) {
+    return 'No se pudo conectar con el servidor. Verifica internet/CORS del backend.';
+  }
+  return msg;
+}
+
 class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier(this._repository) : super(AuthState.initial) {
     bootstrap();
@@ -64,7 +76,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(status: AuthStatus.authenticated, user: user, clearPending: true);
       return true;
     } catch (e) {
-      state = state.copyWith(status: AuthStatus.error, message: e.toString());
+      state = state.copyWith(status: AuthStatus.error, message: _friendlyError(e));
       return false;
     }
   }
@@ -80,7 +92,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
       return true;
     } catch (e) {
-      state = state.copyWith(status: AuthStatus.error, message: e.toString());
+      state = state.copyWith(status: AuthStatus.error, message: _friendlyError(e));
       return false;
     }
   }
@@ -98,7 +110,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(status: AuthStatus.authenticated, user: user, clearPending: true);
       return true;
     } catch (e) {
-      state = state.copyWith(status: AuthStatus.error, message: e.toString());
+      state = state.copyWith(status: AuthStatus.error, message: _friendlyError(e));
       return false;
     }
   }
