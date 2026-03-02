@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../components/home_navbar.dart';
 import '../../components/animated_heading.dart';
 import '../../components/app_action_button.dart';
 import 'package:go_router/go_router.dart';
 import '../../components/modern_view_wrapper.dart';
+import '../../../data/providers/entity_providers.dart';
 
 class DemoProperty {
   final String title;
@@ -25,40 +27,24 @@ class DemoProperty {
   });
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final properties = [
-      DemoProperty(
-        title: "Penthouse Sky Lounge",
-        city: "Bogotá",
-        price: "\$6.200.000",
-        area: "220m²",
-        bedrooms: "4",
-        bathrooms: "4",
-        status: "Disponible",
-      ),
-      DemoProperty(
-        title: "Casa Forest Minimal",
-        city: "Medellín",
-        price: "\$4.700.000",
-        area: "260m²",
-        bedrooms: "4",
-        bathrooms: "4",
-        status: "Top",
-      ),
-      DemoProperty(
-        title: "Loft Neon District",
-        city: "Cali",
-        price: "\$3.100.000",
-        area: "92m²",
-        bedrooms: "2",
-        bathrooms: "2",
-        status: "Nuevo",
-      ),
-    ];
+  Widget build(BuildContext context, WidgetRef ref) {
+    final propertyAsync = ref.watch(propertyListProvider);
+    final properties = propertyAsync.maybeWhen(
+      data: (state) => state.items.take(3).map((p) => DemoProperty(
+        title: p.title,
+        city: p.city,
+        price: '\$${(p.price ?? 0).toStringAsFixed(0)}',
+        area: '-',
+        bedrooms: '-',
+        bathrooms: '-',
+        status: p.status ?? 'Disponible',
+      )).toList(),
+      orElse: () => <DemoProperty>[],
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFF0D0A09),
@@ -82,6 +68,7 @@ class HomeScreen extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 84),
             child: Column(
               children: [
+                if (propertyAsync.isLoading) const LinearProgressIndicator(minHeight: 2),
                 const SafeArea(child: SizedBox(height: 10)),
                 const HeroSection(),
                 const SearchSection(),

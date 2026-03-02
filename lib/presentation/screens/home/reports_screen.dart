@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../components/home_navbar.dart';
 import '../../components/app_action_button.dart';
 import '../../components/animated_heading.dart';
 import 'package:go_router/go_router.dart';
 import '../../components/modern_view_wrapper.dart';
+import '../../../data/models/report_model.dart';
+import '../../../data/providers/entity_providers.dart';
 
 class ReportItem {
   final int id;
@@ -15,14 +18,14 @@ class ReportItem {
   ReportItem(this.id, this.date, this.type, this.detail, this.status);
 }
 
-class ReportsScreen extends StatefulWidget {
+class ReportsScreen extends ConsumerStatefulWidget {
   const ReportsScreen({super.key});
 
   @override
-  State<ReportsScreen> createState() => _ReportsScreenState();
+  ConsumerState<ReportsScreen> createState() => _ReportsScreenState();
 }
 
-class _ReportsScreenState extends State<ReportsScreen> {
+class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   bool _showCreate = false;
   String _query = "";
   final List<ReportItem> _reports = [
@@ -33,9 +36,20 @@ class _ReportsScreenState extends State<ReportsScreen> {
     ReportItem(503, "2026-03-28", "Reseña", "Contenido ofensivo", "resolved"),
   ];
 
+
+  ReportItem _fromReport(Report report) => ReportItem(
+        report.id,
+        '-',
+        report.title,
+        report.description,
+        report.status,
+      );
+
   @override
   Widget build(BuildContext context) {
-    final filtered = _reports
+    final dataAsync = ref.watch(reportsProvider);
+    final source = dataAsync.maybeWhen(data: (items) => items.map(_fromReport).toList(), orElse: () => _reports);
+    final filtered = source
         .where((r) =>
             r.detail.toLowerCase().contains(_query.toLowerCase()) ||
             r.type.toLowerCase().contains(_query.toLowerCase()))
@@ -62,6 +76,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
             bottom: false,
             child: Column(
               children: [
+                if (dataAsync.isLoading) const LinearProgressIndicator(minHeight: 2),
+                if (dataAsync.hasError) const Padding(padding: EdgeInsets.only(top: 6), child: Text('Error cargando datos', style: TextStyle(color: Colors.redAccent, fontSize: 11))),
                 Padding(
                   padding: const EdgeInsets.only(
                       left: 16, right: 16, top: 18, bottom: 12),

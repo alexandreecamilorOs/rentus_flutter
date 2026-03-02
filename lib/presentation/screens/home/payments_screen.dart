@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../components/home_navbar.dart';
 import '../../components/app_action_button.dart';
 import '../../components/animated_heading.dart';
 import 'package:go_router/go_router.dart';
 import '../../components/modern_view_wrapper.dart';
+import '../../../data/models/payment_model.dart';
+import '../../../data/providers/entity_providers.dart';
 
 class PaymentRowItem {
   final int id;
@@ -15,14 +18,14 @@ class PaymentRowItem {
   PaymentRowItem(this.id, this.amount, this.status, this.date, this.type);
 }
 
-class PaymentsScreen extends StatefulWidget {
+class PaymentsScreen extends ConsumerStatefulWidget {
   const PaymentsScreen({super.key});
 
   @override
-  State<PaymentsScreen> createState() => _PaymentsScreenState();
+  ConsumerState<PaymentsScreen> createState() => _PaymentsScreenState();
 }
 
-class _PaymentsScreenState extends State<PaymentsScreen> {
+class _PaymentsScreenState extends ConsumerState<PaymentsScreen> {
   String _query = "";
   final List<PaymentRowItem> _rows = [
     PaymentRowItem(5531, "\$2.500.000", "paid", "2026-01-10", "Arriendo"),
@@ -30,9 +33,22 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
     PaymentRowItem(5533, "\$2.500.000", "failed", "2026-02-10", "Arriendo"),
   ];
 
+  PaymentRowItem _fromPayment(Payment payment) => PaymentRowItem(
+        payment.id,
+        '\$${payment.amount.toStringAsFixed(0)}',
+        payment.status,
+        '-',
+        payment.contractId == null ? 'Pago' : 'Contrato ${payment.contractId}',
+      );
+
   @override
   Widget build(BuildContext context) {
-    final filtered = _rows
+    final paymentsAsync = ref.watch(paymentsProvider);
+    final rows = paymentsAsync.maybeWhen(
+      data: (items) => items.map(_fromPayment).toList(),
+      orElse: () => _rows,
+    );
+    final filtered = rows
         .where((r) =>
             r.id.toString().contains(_query) ||
             r.type.toLowerCase().contains(_query.toLowerCase()))
@@ -60,6 +76,8 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
             bottom: false,
             child: Column(
               children: [
+                if (paymentsAsync.isLoading) const LinearProgressIndicator(minHeight: 2),
+                if (paymentsAsync.hasError) Padding(padding: const EdgeInsets.only(top: 6), child: Text('Error cargando pagos', style: TextStyle(color: Colors.redAccent, fontSize: 11))),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(

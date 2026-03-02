@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../components/home_navbar.dart';
 import '../../components/app_action_button.dart';
 import 'package:go_router/go_router.dart';
 import '../../components/modern_view_wrapper.dart';
+import '../../../data/providers/auth_provider.dart';
 
 enum SettingsSection { Profile, Security, Notifications, Preferences }
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   SettingsSection _activeSection = SettingsSection.Profile;
 
   String fullName = "Juan Esteban López";
@@ -130,7 +132,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 const SizedBox(height: 8),
                                 AppActionButton(
                                   text: "Cerrar sesión",
-                                  onClick: () => context.go('/login'),
+                                  onClick: () async => ref.read(authProvider.notifier).logout(),
                                   gradient: const [
                                     Color(0xFFE74C3C),
                                     Color(0xFFC0392B),

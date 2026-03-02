@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/contract_model.dart';
 import '../models/notification_model.dart';
+import '../models/payment_model.dart';
+import '../models/maintenance_model.dart';
+import '../models/report_model.dart';
 import '../models/paginated_response.dart';
 import '../models/property_model.dart';
 import '../models/rental_request_model.dart';
@@ -60,4 +63,16 @@ final notificationListProvider = FutureProvider<List<NotificationModel>>((ref) a
 
 final profileProvider = FutureProvider<User>((ref) async {
   return ref.read(userRepositoryProvider).getProfile();
+});
+
+final paymentsProvider = FutureProvider<List<Payment>>((ref) async {
+  return ref.read(paymentRepositoryProvider).getPayments();
+});
+
+final maintenancesProvider = FutureProvider<List<Maintenance>>((ref) async {
+  return ref.read(maintenanceRepositoryProvider).getMaintenances();
+});
+
+final reportsProvider = FutureProvider<List<Report>>((ref) async {
+  return ref.read(reportRepositoryProvider).getReports();
 });

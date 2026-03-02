@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../components/home_navbar.dart';
 import '../../components/app_action_button.dart';
 import '../../components/animated_heading.dart';
 import 'package:go_router/go_router.dart';
 import '../../components/modern_view_wrapper.dart';
+import '../../../data/models/maintenance_model.dart';
+import '../../../data/providers/entity_providers.dart';
 
 class MaintenanceItem {
   final int id;
@@ -17,14 +20,14 @@ class MaintenanceItem {
       this.status);
 }
 
-class MaintenanceScreen extends StatefulWidget {
+class MaintenanceScreen extends ConsumerStatefulWidget {
   const MaintenanceScreen({super.key});
 
   @override
-  State<MaintenanceScreen> createState() => _MaintenanceScreenState();
+  ConsumerState<MaintenanceScreen> createState() => _MaintenanceScreenState();
 }
 
-class _MaintenanceScreenState extends State<MaintenanceScreen> {
+class _MaintenanceScreenState extends ConsumerState<MaintenanceScreen> {
   String _query = "";
   final List<MaintenanceItem> _rows = [
     MaintenanceItem(901, "2026-03-01", "Torre Alta 402", "Fuga en cocina",
@@ -35,9 +38,21 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
         "Revisión de cerradura", "low", "completed"),
   ];
 
+
+  MaintenanceItem _fromMaintenance(Maintenance maintenance) => MaintenanceItem(
+        maintenance.id,
+        '-',
+        'Propiedad ${maintenance.propertyId}',
+        maintenance.description,
+        'normal',
+        maintenance.status,
+      );
+
   @override
   Widget build(BuildContext context) {
-    final filtered = _rows
+    final dataAsync = ref.watch(maintenancesProvider);
+    final source = dataAsync.maybeWhen(data: (items) => items.map(_fromMaintenance).toList(), orElse: () => _rows);
+    final filtered = source
         .where((r) =>
             r.title.toLowerCase().contains(_query.toLowerCase()) ||
             r.property.toLowerCase().contains(_query.toLowerCase()) ||
@@ -66,6 +81,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
             bottom: false,
             child: Column(
               children: [
+                if (dataAsync.isLoading) const LinearProgressIndicator(minHeight: 2),
+                if (dataAsync.hasError) const Padding(padding: EdgeInsets.only(top: 6), child: Text('Error cargando datos', style: TextStyle(color: Colors.redAccent, fontSize: 11))),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
