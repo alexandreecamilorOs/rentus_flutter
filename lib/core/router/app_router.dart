@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -44,13 +45,33 @@ class AppRoutes {
   static const about = '/about';
 }
 
+class RouterRefreshListenable extends ChangeNotifier {
+  RouterRefreshListenable(Ref ref) {
+    _subscription = ref.listen(authProvider, (_, __) => notifyListeners());
+  }
+
+  late final ProviderSubscription<AuthState> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.close();
+    super.dispose();
+  }
+}
+
+final routerRefreshListenableProvider =
+    Provider((ref) => RouterRefreshListenable(ref));
+
 final routerProvider = Provider<GoRouter>((ref) {
-  final auth = ref.watch(authProvider);
+  final listenable = ref.watch(routerRefreshListenableProvider);
 
   return GoRouter(
     initialLocation: AppRoutes.login,
+    refreshListenable: listenable,
     redirect: (_, state) {
+      final auth = ref.read(authProvider);
       final location = state.matchedLocation;
+
       final isAuthRoute = {
         AppRoutes.login,
         AppRoutes.register,
@@ -63,7 +84,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         return AppRoutes.login;
       }
 
-      if (auth.isAuthenticated && (location == AppRoutes.login || location == AppRoutes.register)) {
+      if (auth.isAuthenticated &&
+          (location == AppRoutes.login || location == AppRoutes.register)) {
         return AppRoutes.home;
       }
 
@@ -71,29 +93,55 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginScreen()),
-      GoRoute(path: AppRoutes.register, builder: (_, __) => const RegisterScreen()),
-      GoRoute(path: AppRoutes.verifyEmail, builder: (_, __) => const VerifyEmailScreen()),
-      GoRoute(path: AppRoutes.forgotPassword, builder: (_, __) => const ForgotPasswordScreen()),
-      GoRoute(path: AppRoutes.resetPassword, builder: (_, __) => const ResetPasswordScreen()),
+      GoRoute(
+          path: AppRoutes.register, builder: (_, __) => const RegisterScreen()),
+      GoRoute(
+          path: AppRoutes.verifyEmail,
+          builder: (_, __) => const VerifyEmailScreen()),
+      GoRoute(
+          path: AppRoutes.forgotPassword,
+          builder: (_, __) => const ForgotPasswordScreen()),
+      GoRoute(
+        path: AppRoutes.resetPassword,
+        builder: (_, state) =>
+            ResetPasswordScreen(email: state.extra as String?),
+      ),
       GoRoute(path: AppRoutes.home, builder: (_, __) => const HomeScreen()),
-      GoRoute(path: AppRoutes.properties, builder: (_, __) => const PropertiesScreen()),
+      GoRoute(
+          path: AppRoutes.properties,
+          builder: (_, __) => const PropertiesScreen()),
       GoRoute(
         path: AppRoutes.propertyDetail,
-        builder: (_, state) => PropertyDetailScreen(propertyId: int.tryParse(state.pathParameters['id'] ?? '') ?? 0),
+        builder: (_, state) => PropertyDetailScreen(
+            propertyId: int.tryParse(state.pathParameters['id'] ?? '') ?? 0),
       ),
-      GoRoute(path: AppRoutes.propertyCreate, builder: (_, __) => const PropertyCreateScreen()),
+      GoRoute(
+          path: AppRoutes.propertyCreate,
+          builder: (_, __) => const PropertyCreateScreen()),
       GoRoute(
         path: AppRoutes.propertyEdit,
-        builder: (_, state) => PropertyEditScreen(propertyId: int.tryParse(state.pathParameters['id'] ?? '') ?? 0),
+        builder: (_, state) => PropertyEditScreen(
+            propertyId: int.tryParse(state.pathParameters['id'] ?? '') ?? 0),
       ),
-      GoRoute(path: AppRoutes.profile, builder: (_, __) => const ProfileScreen()),
-      GoRoute(path: AppRoutes.settings, builder: (_, __) => const SettingsScreen()),
-      GoRoute(path: AppRoutes.payments, builder: (_, __) => const PaymentsScreen()),
-      GoRoute(path: AppRoutes.contracts, builder: (_, __) => const ContractsScreen()),
-      GoRoute(path: AppRoutes.maintenance, builder: (_, __) => const MaintenanceScreen()),
-      GoRoute(path: AppRoutes.reports, builder: (_, __) => const ReportsScreen()),
-      GoRoute(path: AppRoutes.notifications, builder: (_, __) => const NotificationsScreen()),
-      GoRoute(path: AppRoutes.requests, builder: (_, __) => const RequestsScreen()),
+      GoRoute(
+          path: AppRoutes.profile, builder: (_, __) => const ProfileScreen()),
+      GoRoute(
+          path: AppRoutes.settings, builder: (_, __) => const SettingsScreen()),
+      GoRoute(
+          path: AppRoutes.payments, builder: (_, __) => const PaymentsScreen()),
+      GoRoute(
+          path: AppRoutes.contracts,
+          builder: (_, __) => const ContractsScreen()),
+      GoRoute(
+          path: AppRoutes.maintenance,
+          builder: (_, __) => const MaintenanceScreen()),
+      GoRoute(
+          path: AppRoutes.reports, builder: (_, __) => const ReportsScreen()),
+      GoRoute(
+          path: AppRoutes.notifications,
+          builder: (_, __) => const NotificationsScreen()),
+      GoRoute(
+          path: AppRoutes.requests, builder: (_, __) => const RequestsScreen()),
       GoRoute(path: AppRoutes.about, builder: (_, __) => const AboutScreen()),
     ],
   );

@@ -45,6 +45,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       _acceptTerms;
 
   Future<void> _onRegisterClick() async {
+    print('UI: Register button clicked. Email: $_email');
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -70,9 +71,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
-    final message = ref.read(authProvider).message ?? 'No fue posible registrar la cuenta.';
+    final message =
+        ref.read(authProvider).message ?? 'No fue posible registrar la cuenta.';
     setState(() {
-      _errorMessage = message.contains('connection error') || message.contains('XMLHttpRequest')
+      _errorMessage = message.contains('connection error') ||
+              message.contains('XMLHttpRequest')
           ? 'No se pudo conectar con el servidor. Verifica internet/CORS del backend.'
           : message;
     });
@@ -92,7 +95,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               ),
               Center(
                 child: SingleChildScrollView(
-                  padding: ResponsiveConfig.adaptivePadding(horizontal: 16, vertical: 20),
+                  padding: ResponsiveConfig.adaptivePadding(
+                      horizontal: 16, vertical: 20),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final width = ResponsiveConfig.byBreakpoint<double>(
@@ -103,32 +107,45 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                       return ConstrainedBox(
                         constraints: BoxConstraints(
-                          maxWidth: ResponsiveConfig.getProportionateScreenWidth(width),
+                          maxWidth:
+                              ResponsiveConfig.getProportionateScreenWidth(
+                                  width),
                         ),
                         child: AuthModal(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(8)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(8)),
                               GestureDetector(
                                 onTap: () {
                                   if (context.canPop()) context.pop();
                                 },
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.arrow_back, color: AppColors.textSecondary),
-                                    SizedBox(width: ResponsiveConfig.getProportionateScreenWidth(8)),
-                                    const Text('Volver', style: TextStyle(color: AppColors.textSecondary)),
+                                    const Icon(Icons.arrow_back,
+                                        color: AppColors.textSecondary),
+                                    SizedBox(
+                                        width: ResponsiveConfig
+                                            .getProportionateScreenWidth(8)),
+                                    const Text('Volver',
+                                        style: TextStyle(
+                                            color: AppColors.textSecondary)),
                                   ],
                                 ),
                               ),
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(24)),
                               AuthTabRow(
                                 isLoginSelected: false,
                                 onLoginClick: () => context.go('/login'),
                                 onRegisterClick: () {},
                               ),
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(24)),
                               Text(
                                 'Crea tu cuenta',
                                 style: TextStyle(
@@ -137,7 +154,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   color: AppColors.textPrimary,
                                 ),
                               ),
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(4)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(4)),
                               Text(
                                 'Completa tus datos para comenzar',
                                 style: TextStyle(
@@ -145,53 +164,63 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   fontSize: ResponsiveConfig.fontSize(14),
                                 ),
                               ),
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(24)),
                               AuthInputField(
                                 value: _name,
-                                onValueChange: (val) => setState(() => _name = val),
+                                onValueChange: (val) =>
+                                    setState(() => _name = val),
                                 label: 'Nombre completo',
                                 leadingIcon: Icons.person,
                               ),
                               AuthInputField(
                                 value: _email,
-                                onValueChange: (val) => setState(() => _email = val),
+                                onValueChange: (val) =>
+                                    setState(() => _email = val),
                                 label: 'Email',
                                 leadingIcon: Icons.email,
                               ),
                               AuthInputField(
                                 value: _phone,
-                                onValueChange: (val) => setState(() => _phone = val),
+                                onValueChange: (val) =>
+                                    setState(() => _phone = val),
                                 label: 'Teléfono',
                                 leadingIcon: Icons.phone,
                               ),
                               AuthInputField(
                                 value: _idDocument,
-                                onValueChange: (val) => setState(() => _idDocument = val),
+                                onValueChange: (val) =>
+                                    setState(() => _idDocument = val),
                                 label: 'Documento de identidad',
                                 leadingIcon: Icons.badge,
                               ),
                               AuthInputField(
                                 value: _address,
-                                onValueChange: (val) => setState(() => _address = val),
+                                onValueChange: (val) =>
+                                    setState(() => _address = val),
                                 label: 'Dirección',
                                 leadingIcon: Icons.location_on,
                               ),
                               AuthInputField(
                                 value: _password,
-                                onValueChange: (val) => setState(() => _password = val),
+                                onValueChange: (val) =>
+                                    setState(() => _password = val),
                                 label: 'Contraseña',
                                 leadingIcon: Icons.lock,
                                 isPassword: true,
                                 isPasswordVisible: _isPasswordVisible,
                                 onTogglePasswordVisibility: () {
-                                  setState(() => _isPasswordVisible = !_isPasswordVisible);
+                                  setState(() =>
+                                      _isPasswordVisible = !_isPasswordVisible);
                                 },
                               ),
                               Row(
                                 children: [
                                   Checkbox(
                                     value: _acceptTerms,
-                                    onChanged: (val) => setState(() => _acceptTerms = val ?? false),
+                                    onChanged: (val) => setState(
+                                        () => _acceptTerms = val ?? false),
                                     activeColor: AppColors.primary,
                                   ),
                                   Expanded(
@@ -202,7 +231,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                           text: 'Acepto los ',
                                           style: TextStyle(
                                             color: AppColors.textPrimary,
-                                            fontSize: ResponsiveConfig.fontSize(14),
+                                            fontSize:
+                                                ResponsiveConfig.fontSize(14),
                                           ),
                                           children: const [
                                             TextSpan(
@@ -222,28 +252,38 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               if (_errorMessage != null)
                                 Padding(
                                   padding: EdgeInsets.symmetric(
-                                    vertical: ResponsiveConfig.getProportionateScreenHeight(8),
+                                    vertical: ResponsiveConfig
+                                        .getProportionateScreenHeight(8),
                                   ),
                                   child: Text(
                                     _errorMessage!,
-                                    style: const TextStyle(color: AppColors.error),
+                                    style:
+                                        const TextStyle(color: AppColors.error),
                                   ),
                                 ),
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(8)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(8)),
                               AuthButton(
                                 text: 'Crear Cuenta',
                                 enabled: _isFormValid,
                                 isLoading: _isLoading,
                                 onClick: _onRegisterClick,
                               ),
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(24)),
                               const DividerWithText(text: 'O regístrate con'),
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(24)),
                               SocialButton(
                                 text: 'Registrarse con Google',
                                 onClick: () {},
                               ),
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(24)),
                               Center(
                                 child: GestureDetector(
                                   onTap: () => context.go('/login'),
@@ -267,7 +307,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   ),
                                 ),
                               ),
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(8)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(8)),
                             ],
                           ),
                         ),

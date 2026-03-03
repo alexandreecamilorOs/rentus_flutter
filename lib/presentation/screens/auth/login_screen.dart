@@ -33,6 +33,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool get _isFormValid => _email.isNotEmpty && _password.isNotEmpty;
 
   Future<void> _onLoginClick() async {
+    print('UI: Login button clicked. Email: $_email');
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -53,9 +54,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return;
     }
 
-    final message = ref.read(authProvider).message ?? 'No fue posible iniciar sesión.';
+    final authState = ref.read(authProvider);
+    if (authState.pendingVerificationEmail != null) {
+      context.go('/verify-email');
+      return;
+    }
+
+    final message = authState.message ?? 'No fue posible iniciar sesión.';
     setState(() {
-      _errorMessage = message.contains('connection error') || message.contains('XMLHttpRequest')
+      _errorMessage = message.contains('connection error') ||
+              message.contains('XMLHttpRequest')
           ? 'No se pudo conectar con el servidor. Verifica internet/CORS del backend.'
           : message;
     });
@@ -75,7 +83,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               Center(
                 child: SingleChildScrollView(
-                  padding: ResponsiveConfig.adaptivePadding(horizontal: 16, vertical: 16),
+                  padding: ResponsiveConfig.adaptivePadding(
+                      horizontal: 16, vertical: 16),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final width = ResponsiveConfig.byBreakpoint<double>(
@@ -86,32 +95,45 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                       return ConstrainedBox(
                         constraints: BoxConstraints(
-                          maxWidth: ResponsiveConfig.getProportionateScreenWidth(width),
+                          maxWidth:
+                              ResponsiveConfig.getProportionateScreenWidth(
+                                  width),
                         ),
                         child: AuthModal(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(8)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(8)),
                               GestureDetector(
                                 onTap: () {
                                   if (context.canPop()) context.pop();
                                 },
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.arrow_back, color: AppColors.textSecondary),
-                                    SizedBox(width: ResponsiveConfig.getProportionateScreenWidth(8)),
-                                    const Text('Volver', style: TextStyle(color: AppColors.textSecondary)),
+                                    const Icon(Icons.arrow_back,
+                                        color: AppColors.textSecondary),
+                                    SizedBox(
+                                        width: ResponsiveConfig
+                                            .getProportionateScreenWidth(8)),
+                                    const Text('Volver',
+                                        style: TextStyle(
+                                            color: AppColors.textSecondary)),
                                   ],
                                 ),
                               ),
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(24)),
                               AuthTabRow(
                                 isLoginSelected: true,
                                 onLoginClick: () {},
                                 onRegisterClick: () => context.go('/register'),
                               ),
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(24)),
                               Text(
                                 'Accede a tu cuenta',
                                 style: TextStyle(
@@ -120,7 +142,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   color: AppColors.textPrimary,
                                 ),
                               ),
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(4)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(4)),
                               Text(
                                 'Ingresa tus credenciales para continuar',
                                 style: TextStyle(
@@ -128,32 +152,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   fontSize: ResponsiveConfig.fontSize(14),
                                 ),
                               ),
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(24)),
                               AuthInputField(
                                 value: _email,
-                                onValueChange: (val) => setState(() => _email = val),
+                                onValueChange: (val) =>
+                                    setState(() => _email = val),
                                 label: 'Email',
                                 leadingIcon: Icons.email,
                               ),
                               AuthInputField(
                                 value: _password,
-                                onValueChange: (val) => setState(() => _password = val),
+                                onValueChange: (val) =>
+                                    setState(() => _password = val),
                                 label: 'Contraseña',
                                 leadingIcon: Icons.lock,
                                 isPassword: true,
                                 isPasswordVisible: _isPasswordVisible,
                                 onTogglePasswordVisibility: () {
-                                  setState(() => _isPasswordVisible = !_isPasswordVisible);
+                                  setState(() =>
+                                      _isPasswordVisible = !_isPasswordVisible);
                                 },
                               ),
                               Row(
                                 children: [
                                   Checkbox(
                                     value: _rememberMe,
-                                    onChanged: (val) => setState(() => _rememberMe = val ?? false),
+                                    onChanged: (val) => setState(
+                                        () => _rememberMe = val ?? false),
                                     activeColor: AppColors.primary,
                                   ),
-                                  const Text('Recordarme', style: TextStyle(color: AppColors.textPrimary)),
+                                  const Text('Recordarme',
+                                      style: TextStyle(
+                                          color: AppColors.textPrimary)),
                                   const Spacer(),
                                   GestureDetector(
                                     onTap: () => context.go('/forgot-password'),
@@ -170,28 +202,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               if (_errorMessage != null)
                                 Padding(
                                   padding: EdgeInsets.symmetric(
-                                    vertical: ResponsiveConfig.getProportionateScreenHeight(8),
+                                    vertical: ResponsiveConfig
+                                        .getProportionateScreenHeight(8),
                                   ),
                                   child: Text(
                                     _errorMessage!,
-                                    style: const TextStyle(color: AppColors.error),
+                                    style:
+                                        const TextStyle(color: AppColors.error),
                                   ),
                                 ),
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(8)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(8)),
                               AuthButton(
                                 text: 'Iniciar Sesión',
                                 enabled: _isFormValid,
                                 isLoading: _isLoading,
                                 onClick: _onLoginClick,
                               ),
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(24)),
                               const DividerWithText(text: 'O continúa con'),
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(24)),
                               SocialButton(
                                 text: 'Continuar con Google',
                                 onClick: () {},
                               ),
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(24)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(24)),
                               Center(
                                 child: GestureDetector(
                                   onTap: () => context.go('/register'),
@@ -215,7 +257,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   ),
                                 ),
                               ),
-                              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(8)),
+                              SizedBox(
+                                  height: ResponsiveConfig
+                                      .getProportionateScreenHeight(8)),
                             ],
                           ),
                         ),
