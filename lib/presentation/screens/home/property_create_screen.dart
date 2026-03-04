@@ -292,7 +292,7 @@ class _PropertyCreateScreenState extends ConsumerState<PropertyCreateScreen> {
                                 ],
                               ),
                               const SizedBox(height: 16),
-                              _InfoBanner(
+                              const _InfoBanner(
                                   text:
                                       "La ubicación exacta ayuda a los inquilinos a decidirse más rápido."),
                             ],
@@ -439,7 +439,7 @@ class _PropertyCreateScreenState extends ConsumerState<PropertyCreateScreen> {
                               ),
                               const SizedBox(height: 16),
                               if (_images.isEmpty)
-                                _InfoBanner(
+                                const _InfoBanner(
                                   text:
                                       "Las propiedades con más de 5 fotos reciben un 40% más de interés.",
                                 ),

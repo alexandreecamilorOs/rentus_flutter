@@ -20,7 +20,8 @@ import '../../presentation/screens/home/property_create_screen.dart';
 import '../../presentation/screens/home/property_detail_screen.dart';
 import '../../presentation/screens/home/property_edit_screen.dart';
 import '../../presentation/screens/home/reports_screen.dart';
-import '../../presentation/screens/home/requests_screen.dart';
+import '../../presentation/screens/home/my_requests_screen.dart';
+import '../../presentation/screens/home/owner_requests_screen.dart';
 import '../../presentation/screens/home/settings_screen.dart';
 
 class AppRoutes {
@@ -41,7 +42,8 @@ class AppRoutes {
   static const maintenance = '/maintenance';
   static const reports = '/reports';
   static const notifications = '/notifications';
-  static const requests = '/requests';
+  static const myRequests = '/my_requests';
+  static const ownerRequests = '/owner_requests';
   static const about = '/about';
 }
 
@@ -141,7 +143,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           path: AppRoutes.notifications,
           builder: (_, __) => const NotificationsScreen()),
       GoRoute(
-          path: AppRoutes.requests, builder: (_, __) => const RequestsScreen()),
+          path: AppRoutes.myRequests,
+          builder: (_, __) => const MyRequestsScreen()),
+      GoRoute(
+          path: AppRoutes.ownerRequests,
+          builder: (_, __) => const OwnerRequestsScreen()),
       GoRoute(path: AppRoutes.about, builder: (_, __) => const AboutScreen()),
     ],
   );

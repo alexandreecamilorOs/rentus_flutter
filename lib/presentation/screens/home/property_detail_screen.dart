@@ -53,8 +53,9 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
 
   Widget _buildContent(BuildContext context, Property property) {
     final images = property.propertyImages.map((e) => e.url).toList();
-    if (images.isEmpty)
+    if (images.isEmpty) {
       images.add('https://via.placeholder.com/1200x600?text=Sin+Imagen');
+    }
 
     return SafeArea(
       child: CustomScrollView(
@@ -642,7 +643,7 @@ class _FeatureItem extends StatelessWidget {
                       fontSize: 14,
                       fontWeight: FontWeight.bold)),
               Text(label,
-                  style: TextStyle(color: Colors.white30, fontSize: 10)),
+                  style: const TextStyle(color: Colors.white30, fontSize: 10)),
             ],
           ),
         ],
@@ -733,11 +734,11 @@ class _Sidebar extends ConsumerWidget {
             colors: [Color(0xFF3E2418), Color(0xFF2E1D17)]),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFDA9C5F).withOpacity(0.25)),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
               color: Colors.black54,
               blurRadius: 30,
-              offset: const Offset(0, 10))
+              offset: Offset(0, 10))
         ],
       ),
       child: Column(
@@ -797,9 +798,9 @@ class _Sidebar extends ConsumerWidget {
           const SizedBox(height: 20),
           const Divider(color: Colors.white10),
           const SizedBox(height: 20),
-          _MetaRow(icon: Icons.access_time, label: "Publicado hace 2 días"),
+          const _MetaRow(icon: Icons.access_time, label: "Publicado hace 2 días"),
           const SizedBox(height: 12),
-          _MetaRow(
+          const _MetaRow(
               icon: Icons.remove_red_eye_outlined,
               label: "124 visualizaciones"),
           const SizedBox(height: 12),

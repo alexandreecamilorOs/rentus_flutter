@@ -168,8 +168,8 @@ class HomeScreen extends ConsumerWidget {
               onNavigateContracts: () => context.go('/contracts'),
               onNavigatePayments: () => context.go('/payments'),
               onNavigateMaintenance: () => context.go('/maintenance'),
-              onNavigateMyRequests: () => context.go('/requests'),
-              onNavigateRequests: () => context.go('/requests'),
+              onNavigateMyRequests: () => context.go('/owner_requests'),
+              onNavigateRequests: () => context.go('/owner_requests'),
               onNavigateMyReports: () => context.go('/reports'),
               onNavigateSettings: () => context.go('/settings'),
             ),
@@ -481,12 +481,12 @@ class _MapPreviewCard extends StatelessWidget {
                 color: Colors.black.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Row(
+              child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const _LiveDot(),
-                  const SizedBox(width: 6),
-                  const Text(
+                  _LiveDot(),
+                  SizedBox(width: 6),
+                  Text(
                     "En vivo",
                     style: TextStyle(
                         color: Colors.white,
@@ -604,12 +604,12 @@ class _ModernSearchSection extends StatelessWidget {
         ),
         child: Column(
           children: [
-            _SearchField(
+            const _SearchField(
               icon: Icons.search,
               hint: "Buscar por nombre o descripción...",
             ),
             const SizedBox(height: 12),
-            Row(
+            const Row(
               children: [
                 Expanded(
                   child: _SearchField(
@@ -617,7 +617,7 @@ class _ModernSearchSection extends StatelessWidget {
                     hint: "Ciudad",
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: _SearchField(
                     icon: Icons.category_outlined,
@@ -737,7 +737,7 @@ class _LuxuryPropertyCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: const Color(0xFF27AE60).withOpacity(0.9),
                       borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(color: Colors.black26, blurRadius: 10)
                       ],
                     ),
@@ -821,13 +821,13 @@ class _LuxuryPropertyCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   // Features
-                  Row(
+                  const Row(
                     children: [
                       _CompactFeature(icon: Icons.straighten, value: "120 m²"),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       _CompactFeature(
                           icon: Icons.king_bed_outlined, value: "3"),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       _CompactFeature(icon: Icons.bathtub_outlined, value: "2"),
                     ],
                   ),

@@ -150,11 +150,17 @@ class AuthRepository {
   }
 
   Future<void> updatePassword(
-      {required String currentPassword, required String newPassword}) async {
+      {required String currentPassword,
+      required String newPassword,
+      required String confirmPassword}) async {
     final accessToken = await _tokenStorage.readAccessToken();
-    await _dio.post(
-      '/auth/update-password',
-      data: {'current_password': currentPassword, 'new_password': newPassword},
+    await _dio.put(
+      '/auth/password',
+      data: {
+        'current_password': currentPassword,
+        'new_password': newPassword,
+        'new_password_confirmation': confirmPassword
+      },
       options: Options(
           headers: accessToken == null
               ? null

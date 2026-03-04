@@ -5,7 +5,12 @@ class Report {
   final String description;
   final String status;
 
-  Report({required this.id, required this.userId, required this.title, required this.description, required this.status});
+  Report(
+      {required this.id,
+      required this.userId,
+      required this.title,
+      required this.description,
+      required this.status});
 
   factory Report.fromJson(Map<String, dynamic> json) => Report(
         id: json['id'] ?? 0,
@@ -15,5 +20,11 @@ class Report {
         status: json['status'] ?? 'open',
       );
 
-  Map<String, dynamic> toJson() => {'id': id, 'user_id': userId, 'title': title, 'description': description, 'status': status};
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'user_id': userId,
+        'title': title,
+        'description': description,
+        'status': status
+      };
 }

@@ -9,6 +9,9 @@ class User {
   final String? verificationStatus;
   final String? role;
   final String? photo;
+  final String? bio;
+  final String? department;
+  final String? city;
 
   User({
     required this.id,
@@ -21,6 +24,9 @@ class User {
     this.verificationStatus,
     this.role,
     this.photo,
+    this.bio,
+    this.department,
+    this.city,
   });
 
   factory User.fromJson(Map<String, dynamic> json) => User(
@@ -34,6 +40,9 @@ class User {
         verificationStatus: json['verification_status'],
         role: json['role'],
         photo: json['photo'],
+        bio: json['bio'],
+        department: json['department'],
+        city: json['city'],
       );
 
   Map<String, dynamic> toJson() => {
@@ -47,6 +56,9 @@ class User {
         'verification_status': verificationStatus,
         'role': role,
         'photo': photo,
+        'bio': bio,
+        'department': department,
+        'city': city,
       };
 }
 
@@ -58,7 +70,13 @@ class RegisterData {
   final String address;
   final String password;
 
-  RegisterData({required this.name, required this.email, required this.phone, required this.idDocument, required this.address, required this.password});
+  RegisterData(
+      {required this.name,
+      required this.email,
+      required this.phone,
+      required this.idDocument,
+      required this.address,
+      required this.password});
 
   Map<String, dynamic> toJson() => {
         'name': name,

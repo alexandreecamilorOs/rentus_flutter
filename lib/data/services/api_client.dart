@@ -42,7 +42,7 @@ class ApiClient {
               _onRefreshToken != null &&
               e.requestOptions.extra['retried'] != true) {
             try {
-              final newToken = await _onRefreshToken!();
+              final newToken = await _onRefreshToken();
               if (newToken != null && newToken.isNotEmpty) {
                 final retryOptions = e.requestOptions;
                 retryOptions.headers['Authorization'] = 'Bearer $newToken';

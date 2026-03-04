@@ -185,8 +185,8 @@ class _PropertiesScreenState extends ConsumerState<PropertiesScreen> {
               onNavigateContracts: () => context.go('/contracts'),
               onNavigatePayments: () => context.go('/payments'),
               onNavigateMaintenance: () => context.go('/maintenance'),
-              onNavigateMyRequests: () => context.go('/requests'),
-              onNavigateRequests: () => context.go('/requests'),
+              onNavigateMyRequests: () => context.go('/owner_requests'),
+              onNavigateRequests: () => context.go('/owner_requests'),
               onNavigateMyReports: () => context.go('/reports'),
               onNavigateSettings: () => context.go('/settings'),
             ),
@@ -285,7 +285,7 @@ class _CreateActionButton extends StatelessWidget {
           children: [
             Icon(Icons.add, color: Color(0xFF1A0E0A), size: 20),
             SizedBox(width: 8),
-            const Text(
+            Text(
               "Publicar",
               style: TextStyle(
                 color: Color(0xFF1A0E0A),

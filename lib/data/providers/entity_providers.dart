@@ -65,6 +65,10 @@ final myRequestsProvider = FutureProvider<List<RentalRequest>>((ref) async {
   return ref.read(rentalRequestRepositoryProvider).getMyRequests();
 });
 
+final ownerRequestsProvider = FutureProvider<List<RentalRequest>>((ref) async {
+  return ref.read(rentalRequestRepositoryProvider).getMyReceivedRequests();
+});
+
 final myContractsProvider = FutureProvider<List<Contract>>((ref) async {
   return ref.read(contractRepositoryProvider).getContracts();
 });
@@ -78,6 +82,10 @@ final notificationListProvider =
 
 final paymentsProvider = FutureProvider<List<Payment>>((ref) async {
   return ref.read(paymentRepositoryProvider).getPayments();
+});
+
+final paymentMethodsProvider = FutureProvider<List<PaymentMethod>>((ref) async {
+  return ref.read(paymentMethodRepositoryProvider).getMethods();
 });
 
 final maintenancesProvider = FutureProvider<List<Maintenance>>((ref) async {

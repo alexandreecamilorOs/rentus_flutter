@@ -17,6 +17,7 @@ class AppActionButton extends StatefulWidget {
   final IconData? icon;
   final double? width;
   final double? height;
+  final bool isEnabled;
 
   const AppActionButton({
     super.key,
@@ -37,6 +38,7 @@ class AppActionButton extends StatefulWidget {
     this.icon,
     this.width,
     this.height,
+    this.isEnabled = true,
   });
 
   @override
@@ -86,89 +88,93 @@ class _AppActionButtonState extends State<AppActionButton>
         BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(16));
 
     return GestureDetector(
-      onTapDown: _handleTapDown,
-      onTapUp: _handleTapUp,
-      onTapCancel: _handleTapCancel,
-      child: AnimatedScale(
-        scale: _isPressed ? 0.98 : 1,
-        duration: const Duration(milliseconds: 130),
-        child: Container(
-          width: widget.width ?? double.infinity,
-          height: widget.height ??
-              ResponsiveConfig.getProportionateScreenHeight(52),
-          decoration: BoxDecoration(
-            borderRadius: borderRadius,
-            color: widget.isSecondary ? Colors.white.withOpacity(0.05) : null,
-            gradient: widget.isSecondary
-                ? null
-                : LinearGradient(
-                    colors: widget.gradient,
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-            border: widget.isSecondary
-                ? Border.all(
-                    color: widget.borderColor ??
-                        const Color(0xFFDA9C5F).withOpacity(0.25))
-                : null,
-            boxShadow: widget.isSecondary
-                ? null
-                : [
-                    BoxShadow(
-                      color: const Color(0xAA8A5D34).withOpacity(0.28),
-                      blurRadius:
-                          ResponsiveConfig.getProportionateScreenWidth(28),
-                      offset: Offset(
-                          0, ResponsiveConfig.getProportionateScreenHeight(12)),
+      onTapDown: widget.isEnabled ? _handleTapDown : null,
+      onTapUp: widget.isEnabled ? _handleTapUp : null,
+      onTapCancel: widget.isEnabled ? _handleTapCancel : null,
+      child: Opacity(
+        opacity: widget.isEnabled ? 1.0 : 0.5,
+        child: AnimatedScale(
+          scale: _isPressed ? 0.98 : 1,
+          duration: const Duration(milliseconds: 130),
+          child: Container(
+            width: widget.width ?? double.infinity,
+            height: widget.height ??
+                ResponsiveConfig.getProportionateScreenHeight(52),
+            decoration: BoxDecoration(
+              borderRadius: borderRadius,
+              color: widget.isSecondary ? Colors.white.withOpacity(0.05) : null,
+              gradient: widget.isSecondary
+                  ? null
+                  : LinearGradient(
+                      colors: widget.gradient,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                  ],
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: AnimatedBuilder(
-                  animation: _bubbleController,
-                  builder: (context, child) {
-                    return CustomPaint(
-                      painter: _BubblePainter(
-                        phase: _bubbleController.value,
-                        seed: widget.animationSeed,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              Positioned.fill(
-                child: LuxuryWaveOverlay(
-                  animation: _waveController,
-                  color: const Color(0xFFFFD59A),
-                ),
-              ),
-              Center(
-                child: Padding(
-                  padding: widget.paddingValues,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (widget.icon != null) ...[
-                        Icon(widget.icon, color: widget.contentColor, size: 20),
-                        const SizedBox(width: 8),
-                      ],
-                      Text(
-                        widget.text,
-                        style: TextStyle(
-                          color: widget.contentColor,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.6,
-                          fontSize: ResponsiveConfig.fontSize(16),
-                        ),
+              border: widget.isSecondary
+                  ? Border.all(
+                      color: widget.borderColor ??
+                          const Color(0xFFDA9C5F).withOpacity(0.25))
+                  : null,
+              boxShadow: widget.isSecondary
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: const Color(0xAA8A5D34).withOpacity(0.28),
+                        blurRadius:
+                            ResponsiveConfig.getProportionateScreenWidth(28),
+                        offset: Offset(0,
+                            ResponsiveConfig.getProportionateScreenHeight(12)),
                       ),
                     ],
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: AnimatedBuilder(
+                    animation: _bubbleController,
+                    builder: (context, child) {
+                      return CustomPaint(
+                        painter: _BubblePainter(
+                          phase: _bubbleController.value,
+                          seed: widget.animationSeed,
+                        ),
+                      );
+                    },
                   ),
                 ),
-              ),
-            ],
+                Positioned.fill(
+                  child: LuxuryWaveOverlay(
+                    animation: _waveController,
+                    color: const Color(0xFFFFD59A),
+                  ),
+                ),
+                Center(
+                  child: Padding(
+                    padding: widget.paddingValues,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (widget.icon != null) ...[
+                          Icon(widget.icon,
+                              color: widget.contentColor, size: 20),
+                          const SizedBox(width: 8),
+                        ],
+                        Text(
+                          widget.text,
+                          style: TextStyle(
+                            color: widget.contentColor,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.6,
+                            fontSize: ResponsiveConfig.fontSize(16),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

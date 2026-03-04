@@ -5,7 +5,12 @@ class Maintenance {
   final String description;
   final String status;
 
-  Maintenance({required this.id, required this.propertyId, required this.userId, required this.description, required this.status});
+  Maintenance(
+      {required this.id,
+      required this.propertyId,
+      required this.userId,
+      required this.description,
+      required this.status});
 
   factory Maintenance.fromJson(Map<String, dynamic> json) => Maintenance(
         id: json['id'] ?? 0,
@@ -15,5 +20,11 @@ class Maintenance {
         status: json['status'] ?? 'pending',
       );
 
-  Map<String, dynamic> toJson() => {'id': id, 'property_id': propertyId, 'user_id': userId, 'description': description, 'status': status};
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'property_id': propertyId,
+        'user_id': userId,
+        'description': description,
+        'status': status
+      };
 }
