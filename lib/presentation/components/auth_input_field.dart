@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../core/responsive_config.dart';
 import '../../core/theme/app_colors.dart';
 
 class AuthInputField extends StatefulWidget {
@@ -38,9 +40,7 @@ class _AuthInputFieldState extends State<AuthInputField> {
     _controller = TextEditingController(text: widget.value);
     _focusNode = FocusNode();
     _focusNode.addListener(() {
-      setState(() {
-        _isFocused = _focusNode.hasFocus;
-      });
+      setState(() => _isFocused = _focusNode.hasFocus);
     });
   }
 
@@ -61,22 +61,24 @@ class _AuthInputFieldState extends State<AuthInputField> {
 
   @override
   Widget build(BuildContext context) {
-    final bool hasError = widget.error != null && widget.error!.isNotEmpty;
+    final hasError = widget.error != null && widget.error!.isNotEmpty;
 
-    final Color containerColor = hasError
+    final containerColor = hasError
         ? AppColors.error.withOpacity(0.08)
         : _isFocused
             ? AppColors.white
             : AppColors.inputBg;
 
-    final Color borderColor = hasError
+    final borderColor = hasError
         ? AppColors.error
         : _isFocused
             ? AppColors.primary
             : AppColors.border;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: EdgeInsets.symmetric(
+        vertical: ResponsiveConfig.getProportionateScreenHeight(8),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -85,9 +87,13 @@ class _AuthInputFieldState extends State<AuthInputField> {
             curve: Curves.fastOutSlowIn,
             decoration: BoxDecoration(
               color: containerColor,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(
+                ResponsiveConfig.getProportionateScreenWidth(16),
+              ),
               border: Border.all(
-                  color: borderColor, width: _isFocused || hasError ? 2 : 1),
+                color: borderColor,
+                width: _isFocused || hasError ? 2 : 1,
+              ),
             ),
             child: TextField(
               controller: _controller,
@@ -100,10 +106,7 @@ class _AuthInputFieldState extends State<AuthInputField> {
                 labelStyle: TextStyle(
                   color: hasError ? AppColors.error : AppColors.textSecondary,
                 ),
-                prefixIcon: Icon(
-                  widget.leadingIcon,
-                  color: AppColors.textSecondary,
-                ),
+                prefixIcon: Icon(widget.leadingIcon, color: AppColors.textSecondary),
                 suffixIcon: widget.isPassword
                     ? IconButton(
                         icon: Icon(
@@ -120,19 +123,24 @@ class _AuthInputFieldState extends State<AuthInputField> {
                 focusedBorder: InputBorder.none,
                 errorBorder: InputBorder.none,
                 disabledBorder: InputBorder.none,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: ResponsiveConfig.getProportionateScreenWidth(16),
+                  vertical: ResponsiveConfig.getProportionateScreenHeight(16),
+                ),
               ),
             ),
           ),
           if (hasError)
             Padding(
-              padding: const EdgeInsets.only(top: 4, left: 16),
+              padding: EdgeInsets.only(
+                top: ResponsiveConfig.getProportionateScreenHeight(4),
+                left: ResponsiveConfig.getProportionateScreenWidth(16),
+              ),
               child: Text(
                 widget.error!,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.error,
-                  fontSize: 12,
+                  fontSize: ResponsiveConfig.fontSize(12),
                 ),
               ),
             ),

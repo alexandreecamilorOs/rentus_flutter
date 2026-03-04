@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+
+import '../../core/responsive_config.dart';
 import '../../core/theme/app_colors.dart';
+import 'luxury_wave_overlay.dart';
 
 class SocialButton extends StatefulWidget {
   final String text;
@@ -15,78 +18,93 @@ class SocialButton extends StatefulWidget {
   State<SocialButton> createState() => _SocialButtonState();
 }
 
-class _SocialButtonState extends State<SocialButton> {
+class _SocialButtonState extends State<SocialButton>
+    with SingleTickerProviderStateMixin {
   bool _isPressed = false;
+  late final AnimationController _waveController;
 
-  void _handleTapDown(TapDownDetails details) {
-    setState(() => _isPressed = true);
+  @override
+  void initState() {
+    super.initState();
+    _waveController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
   }
+
+  @override
+  void dispose() {
+    _waveController.dispose();
+    super.dispose();
+  }
+
+  void _handleTapDown(TapDownDetails details) => setState(() => _isPressed = true);
 
   void _handleTapUp(TapUpDetails details) {
     setState(() => _isPressed = false);
     widget.onClick();
   }
 
-  void _handleTapCancel() {
-    setState(() => _isPressed = false);
-  }
+  void _handleTapCancel() => setState(() => _isPressed = false);
 
   @override
   Widget build(BuildContext context) {
-    final scale = _isPressed ? 0.985 : 1.0;
-    final borderTone =
-        _isPressed ? AppColors.border.withOpacity(0.65) : AppColors.border;
+    final borderTone = _isPressed ? AppColors.border.withOpacity(0.65) : AppColors.border;
 
     return GestureDetector(
       onTapDown: _handleTapDown,
       onTapUp: _handleTapUp,
       onTapCancel: _handleTapCancel,
       child: AnimatedScale(
-        scale: scale,
+        scale: _isPressed ? 0.985 : 1,
         duration: const Duration(milliseconds: 100),
         curve: Curves.easeOut,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 100),
           width: double.infinity,
-          height: 54,
+          height: ResponsiveConfig.getProportionateScreenHeight(54),
           decoration: BoxDecoration(
             color: AppColors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: borderTone,
-              width: 1.5,
-            ),
+            borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(16)),
+            border: Border.all(color: borderTone, width: 1.5),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
             children: [
-              // Icono que reemplaza temporalmente a R.drawable.ic_google
-              Container(
-                width: 18,
-                height: 18,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.redAccent,
-                ),
-                child: const Center(
-                  child: Text(
-                    'G',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+              Positioned.fill(
+                child: LuxuryWaveOverlay(
+                  animation: _waveController,
+                  color: const Color(0xFFFFD59A),
                 ),
               ),
-              const SizedBox(width: 8),
-              Text(
-                widget.text,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: ResponsiveConfig.getProportionateScreenWidth(18),
+                    height: ResponsiveConfig.getProportionateScreenWidth(18),
+                    decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primary),
+                    child: Center(
+                      child: Text(
+                        'G',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: ResponsiveConfig.fontSize(12),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: ResponsiveConfig.getProportionateScreenWidth(8)),
+                  Text(
+                    widget.text,
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                      fontSize: ResponsiveConfig.fontSize(14),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

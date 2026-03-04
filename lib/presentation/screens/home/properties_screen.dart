@@ -1,146 +1,178 @@
 import 'package:flutter/material.dart';
-import '../../components/app_action_button.dart';
-import '../../components/animated_heading.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../data/providers/entity_providers.dart';
+import '../../../data/models/property_model.dart';
+import '../../components/app_action_button.dart';
 import '../../components/home_navbar.dart';
-import '../../animations/shimmer_block.dart';
 
-class PropertyCardItem {
-  final String title;
-  final String city;
-  final String price;
-  final String area;
-  final String bedrooms;
-  final String bathrooms;
-  final String status;
-  final String badge;
-
-  PropertyCardItem({
-    required this.title,
-    required this.city,
-    required this.price,
-    required this.area,
-    required this.bedrooms,
-    required this.bathrooms,
-    required this.status,
-    required this.badge,
-  });
-}
-
-enum PropertiesUiState { Loading, Error, Empty, Success }
-
-class PropertiesScreen extends StatefulWidget {
+class PropertiesScreen extends ConsumerStatefulWidget {
   const PropertiesScreen({super.key});
 
   @override
-  State<PropertiesScreen> createState() => _PropertiesScreenState();
+  ConsumerState<PropertiesScreen> createState() => _PropertiesScreenState();
 }
 
-class _PropertiesScreenState extends State<PropertiesScreen> {
-  String _query = "";
-  String _selectedFilter = "Todas";
-  int _carouselIndex = 0;
-
-  final List<String> _filters = [
-    "Todas",
-    "Apartamento",
-    "Casa",
-    "Arriendo",
-    "Venta",
-    "Premium"
-  ];
-  final List<String> _featured = [
-    "Penthouse Sky Lounge",
-    "Villa Designer 2026",
-    "Loft Smart Living"
-  ];
-  final List<PropertyCardItem> _properties = [
-    PropertyCardItem(
-        title: "Penthouse Sky Lounge",
-        city: "Medellín",
-        price: "\$6.200.000 / mes",
-        area: "220m²",
-        bedrooms: "4 hab",
-        bathrooms: "4 baños",
-        status: "Disponible",
-        badge: "TOP"),
-    PropertyCardItem(
-        title: "Villa Lake Side",
-        city: "Rionegro",
-        price: "\$1.250.000.000",
-        area: "420m²",
-        bedrooms: "5 hab",
-        bathrooms: "6 baños",
-        status: "Venta",
-        badge: "NEW"),
-    PropertyCardItem(
-        title: "Loft Neon District",
-        city: "Bogotá",
-        price: "\$3.100.000 / mes",
-        area: "92m²",
-        bedrooms: "2 hab",
-        bathrooms: "2 baños",
-        status: "Disponible",
-        badge: "HOT"),
-    PropertyCardItem(
-        title: "Casa Forest Minimal",
-        city: "Cali",
-        price: "\$4.700.000 / mes",
-        area: "260m²",
-        bedrooms: "4 hab",
-        bathrooms: "4 baños",
-        status: "Nuevo",
-        badge: "TREND"),
-  ];
+class _PropertiesScreenState extends ConsumerState<PropertiesScreen> {
+  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+  String _selectedType = 'Todos';
 
   @override
   void initState() {
     super.initState();
-    _startCarouselTimer();
+    _scrollController.addListener(_onScroll);
   }
 
-  void _startCarouselTimer() async {
-    while (mounted) {
-      await Future.delayed(const Duration(milliseconds: 3200));
-      if (mounted) {
-        setState(() {
-          _carouselIndex = (_carouselIndex + 1) % _featured.length;
-        });
-      }
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      ref.read(propertyListProvider.notifier).loadNextPage();
     }
-  }
-
-  PropertiesUiState get _uiState {
-    if (_query.toLowerCase() == "loading") return PropertiesUiState.Loading;
-    if (_query.toLowerCase() == "error") return PropertiesUiState.Error;
-    if (_query.toLowerCase() == "empty") return PropertiesUiState.Empty;
-    return PropertiesUiState.Success;
   }
 
   @override
   Widget build(BuildContext context) {
+    final propertiesAsync = ref.watch(propertyListProvider);
+
     return Scaffold(
       backgroundColor: const Color(0xFF0D0A09),
       body: Stack(
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF0D0A09),
-                  Color(0xFF241711),
-                  Color(0xFF3B251D)
-                ],
-              ),
+          // 1. Cinematic Background
+          const _CinematicBackground(),
+
+          // 2. Main Content
+          SafeArea(
+            child: CustomScrollView(
+              controller: _scrollController,
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                // Header & Search
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Explorar",
+                                  style: TextStyle(
+                                    color: const Color(0xFFDA9C5F)
+                                        .withOpacity(0.8),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                                const Text(
+                                  "Propiedades",
+                                  style: TextStyle(
+                                    color: Color(0xFFF0E5DB),
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: -0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            _CreateActionButton(
+                              onTap: () => context.push('/properties/create'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        _SearchBar(
+                          controller: _searchController,
+                          onSearch: (val) {
+                            // Filter logic could be added here or via provider
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _FilterChips(
+                          selectedType: _selectedType,
+                          onSelected: (type) {
+                            setState(() => _selectedType = type);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Properties Grid
+                propertiesAsync.when(
+                  data: (state) {
+                    if (state.items.isEmpty) {
+                      return const SliverFillRemaining(
+                        child: Center(child: _EmptyState()),
+                      );
+                    }
+                    return SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      sliver: SliverGrid(
+                        gridDelegate:
+                            const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 450,
+                          mainAxisExtent: 460,
+                          crossAxisSpacing: 20,
+                          mainAxisSpacing: 20,
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final property = state.items[index];
+                            return _PropertyCard(property: property);
+                          },
+                          childCount: state.items.length,
+                        ),
+                      ),
+                    );
+                  },
+                  loading: () => const SliverFillRemaining(
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  error: (err, _) => SliverFillRemaining(
+                    child: Center(
+                      child: _ErrorState(
+                        onRetry: () => ref.invalidate(propertyListProvider),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Loading More Indicator
+                if (propertiesAsync.value?.hasMore ?? false)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 32),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFFDA9C5F),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                const SliverToBoxAdapter(child: SizedBox(height: 100)),
+              ],
             ),
           ),
-          const FuturisticBackground(),
-          SafeArea(
-            bottom: false,
-            child: _buildContent(),
-          ),
+
+          // 3. Navbar
           Align(
             alignment: Alignment.bottomCenter,
             child: HomeNavbar(
@@ -153,8 +185,8 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
               onNavigateContracts: () => context.go('/contracts'),
               onNavigatePayments: () => context.go('/payments'),
               onNavigateMaintenance: () => context.go('/maintenance'),
-              onNavigateMyRequests: () => context.go('/requests'),
-              onNavigateRequests: () => context.go('/requests'),
+              onNavigateMyRequests: () => context.go('/owner_requests'),
+              onNavigateRequests: () => context.go('/owner_requests'),
               onNavigateMyReports: () => context.go('/reports'),
               onNavigateSettings: () => context.go('/settings'),
             ),
@@ -163,514 +195,277 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
       ),
     );
   }
+}
 
-  Widget _buildContent() {
-    switch (_uiState) {
-      case PropertiesUiState.Loading:
-        return const _LoadingState();
-      case PropertiesUiState.Error:
-        return _CenterInfo(
-          message: "No pudimos cargar las propiedades.",
-          child: AppActionButton(
-            text: "Reintentar",
-            onClick: () {},
-          ),
-        );
-      case PropertiesUiState.Empty:
-        return const _CenterInfo(
-          message: "No encontramos resultados para tu búsqueda.",
-          child:
-              Icon(Icons.hourglass_bottom, color: Color(0xFFDA9C5F), size: 30),
-        );
-      case PropertiesUiState.Success:
-        return ListView(
-          padding:
-              const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 100),
-          children: [
-            const _HeroBlock(),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                    child: AppActionButton(
-                        text: "Crear",
-                        onClick: () => context.go('/properties/create'),
-                        gradient: const [
-                      Color(0xFFDA9C5F),
-                      Color(0xFFB8791F),
-                      Color(0xFFDA9C5F)
-                    ])),
-                const SizedBox(width: 8),
-                Expanded(
-                    child: AppActionButton(
-                        text: "Detalle",
-                        onClick: () => context.go('/properties/detail'),
-                        gradient: const [
-                      Color(0xFF6366F1),
-                      Color(0xFF4F46E5),
-                      Color(0xFF6366F1)
-                    ])),
-                const SizedBox(width: 8),
-                Expanded(
-                    child: AppActionButton(
-                        text: "Editar",
-                        onClick: () => context.go('/properties/edit'),
-                        gradient: const [
-                      Color(0xFF22C55E),
-                      Color(0xFF16A34A),
-                      Color(0xFF22C55E)
-                    ])),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _PropertyCarousel(
-              title: _featured[_carouselIndex],
-              index: _carouselIndex,
-              count: _featured.length,
-              onPrev: () => setState(() => _carouselIndex =
-                  (_carouselIndex - 1 + _featured.length) % _featured.length),
-              onNext: () => setState(() =>
-                  _carouselIndex = (_carouselIndex + 1) % _featured.length),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              decoration: InputDecoration(
-                hintText: "Busca por ciudad, tipo o mood de vivienda",
-                hintStyle: const TextStyle(color: Colors.grey),
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                filled: true,
-                fillColor: const Color(0xFF241711),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none),
-              ),
-              style: const TextStyle(color: Colors.white),
-              onChanged: (val) => setState(() => _query = val),
-            ),
-            const SizedBox(height: 12),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: _filters.map((filter) {
-                  final isSelected = _selectedFilter == filter;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: ChoiceChip(
-                      label: Text(filter,
-                          style: TextStyle(
-                              color: isSelected
-                                  ? const Color(0xFF1A0E0A)
-                                  : const Color(0xFFF0E5DB))),
-                      selected: isSelected,
-                      onSelected: (val) =>
-                          setState(() => _selectedFilter = filter),
-                      selectedColor: const Color(0xFFDA9C5F),
-                      backgroundColor: const Color(0x1FFFFFFF),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                      showCheckmark: false,
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              "${_properties.length} propiedades premium encontradas",
-              style: const TextStyle(
-                  color: Color(0xFFE8DAC8),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 12),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 0.65,
-              ),
-              itemCount: _properties.length,
-              itemBuilder: (context, index) {
-                return _PropertyCard(
-                    property: _properties[index],
-                    index: index,
-                    onClick: () => context.go('/properties/detail'));
-              },
-            ),
+class _CinematicBackground extends StatelessWidget {
+  const _CinematicBackground();
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF0D0A09),
+            Color(0xFF1E1410),
+            Color(0xFF2E1D17),
           ],
-        );
-    }
-  }
-}
-
-class FuturisticBackground extends StatefulWidget {
-  const FuturisticBackground({super.key});
-
-  @override
-  State<FuturisticBackground> createState() => _FuturisticBackgroundState();
-}
-
-class _FuturisticBackgroundState extends State<FuturisticBackground>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 2200))
-      ..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Stack(
-          children: List.generate(18, (i) {
-            final shift = _controller.value * -24.0;
-            return Positioned(
-              left: 20.0 + i * 20.0,
-              top: 40.0 + i * 45.0 + shift,
-              child: Container(
-                width: 3.0 + i % 3,
-                height: 3.0 + i % 3,
-                decoration: const BoxDecoration(
-                  color: Color(0x44DA9C5F),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            );
-          }),
-        );
-      },
-    );
-  }
-}
-
-class _CenterInfo extends StatelessWidget {
-  final String message;
-  final Widget child;
-
-  const _CenterInfo({required this.message, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          child,
-          const SizedBox(height: 10),
-          Text(message,
-              style: const TextStyle(
-                  color: Color(0xFFF0E5DB), fontWeight: FontWeight.w600)),
-        ],
+        ),
       ),
     );
   }
 }
 
-class _LoadingState extends StatelessWidget {
-  const _LoadingState();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(18.0),
-      child: Column(
-        children: [
-          const ShimmerBlock(height: 220),
-          const SizedBox(height: 12),
-          const ShimmerBlock(height: 52),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              const Expanded(child: ShimmerBlock(height: 36)),
-              const SizedBox(width: 8),
-              const Expanded(child: ShimmerBlock(height: 36)),
-              const SizedBox(width: 8),
-              const Expanded(child: ShimmerBlock(height: 36)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Expanded(
-            child: GridView.count(
-              crossAxisCount: 2,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              children:
-                  List.generate(4, (index) => const ShimmerBlock(height: 120)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _HeroBlock extends StatelessWidget {
-  const _HeroBlock();
+class _SearchBar extends StatelessWidget {
+  final TextEditingController controller;
+  final Function(String) onSearch;
+  const _SearchBar({required this.controller, required this.onSearch});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0x223B251D),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.auto_awesome, color: Color(0xFFDA9C5F), size: 20),
-              SizedBox(width: 6),
-              Text("Colección 2026",
-                  style: TextStyle(
-                      color: Color(0xFFDA9C5F), fontWeight: FontWeight.bold)),
-            ],
-          ),
-          const SizedBox(height: 8),
-          const AnimatedHeading(
-              text: "Propiedades 2026 • Motion UI",
-              style: TextStyle(fontSize: 30, height: 1.1)),
-          const SizedBox(height: 8),
-          const Text(
-            "Explora un look futurista: microanimaciones, brillo premium y flujo directo a crear/detalle/edición.",
-            style: TextStyle(color: Color(0xFFE8DAC8), fontSize: 13),
+        color: const Color(0xFF0F0F0F), // Almost black
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color: const Color(0xFFDA9C5F).withOpacity(0.4)), // More visible
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.6),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
+      ),
+      child: TextField(
+        controller: controller,
+        onChanged: onSearch,
+        style: const TextStyle(color: Color(0xFFF0E5DB), fontSize: 16),
+        decoration: InputDecoration(
+          hintText: "Buscar por ubicación o título...",
+          hintStyle: TextStyle(color: const Color(0xFFF0E5DB).withOpacity(0.2)),
+          prefixIcon:
+              const Icon(Icons.search, color: Color(0xFFDA9C5F), size: 24),
+          border: InputBorder.none,
+          filled: false,
+          fillColor: Colors.transparent,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        ),
       ),
     );
   }
 }
 
-class _PropertyCarousel extends StatelessWidget {
-  final String title;
-  final int index;
-  final int count;
-  final VoidCallback onPrev;
-  final VoidCallback onNext;
-
-  const _PropertyCarousel({
-    required this.title,
-    required this.index,
-    required this.count,
-    required this.onPrev,
-    required this.onNext,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 230,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: Colors.grey.shade900,
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          const Center(
-              child: Icon(Icons.image, size: 48, color: Colors.white24)),
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Color(0xB0000000),
-                  Color(0xD90D0A09)
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 14,
-            left: 14,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Row(
-                  children: [
-                    Icon(Icons.star, color: Color(0xFFF6D2A5), size: 14),
-                    SizedBox(width: 4),
-                    Text("Featured Drop",
-                        style: TextStyle(
-                            color: Color(0xFFF6D2A5),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12)),
-                  ],
-                ),
-                AnimatedHeading(
-                    text: title,
-                    style: const TextStyle(fontSize: 18),
-                    gradientColors: const [
-                      Color(0xFFFFF7EE),
-                      Color(0xFFF6D2A5),
-                      Color(0xFFDA9C5F)
-                    ],
-                    durationMillis: 3100),
-                Text("${index + 1} / $count",
-                    style: TextStyle(
-                        color: Colors.white.withOpacity(0.9), fontSize: 12)),
-              ],
-            ),
-          ),
-          Positioned(
-            bottom: 12,
-            right: 12,
-            child: Row(
-              children: [
-                _GlassArrow(icon: Icons.chevron_left, onClick: onPrev),
-                const SizedBox(width: 8),
-                _GlassArrow(icon: Icons.chevron_right, onClick: onNext),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _GlassArrow extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onClick;
-
-  const _GlassArrow({required this.icon, required this.onClick});
+class _CreateActionButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _CreateActionButton({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onClick,
+      onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.18),
-          shape: BoxShape.circle,
+          gradient: const LinearGradient(
+            colors: [Color(0xFFDA9C5F), Color(0xFFB8791F)],
+          ),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFDA9C5F).withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
-        child: Icon(icon, color: Colors.white, size: 20),
+        child: const Row(
+          children: [
+            Icon(Icons.add, color: Color(0xFF1A0E0A), size: 20),
+            SizedBox(width: 8),
+            Text(
+              "Publicar",
+              style: TextStyle(
+                color: Color(0xFF1A0E0A),
+                fontWeight: FontWeight.w900,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FilterChips extends StatelessWidget {
+  final String selectedType;
+  final Function(String) onSelected;
+  const _FilterChips({required this.selectedType, required this.onSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    final types = ['Todos', 'Casas', 'Apartamentos', 'Oficinas', 'Locales'];
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        children: types.map((type) {
+          final isSelected = selectedType == type;
+          return Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: ChoiceChip(
+              label: Text(type),
+              selected: isSelected,
+              onSelected: (_) => onSelected(type),
+              backgroundColor: const Color(0xFF241711),
+              selectedColor: const Color(0xFFDA9C5F),
+              labelStyle: TextStyle(
+                color: isSelected ? const Color(0xFF1A0E0A) : Colors.white70,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 13,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(
+                  color:
+                      isSelected ? Colors.transparent : const Color(0x26DA9C5F),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
 }
 
 class _PropertyCard extends StatelessWidget {
-  final PropertyCardItem property;
-  final int index;
-  final VoidCallback onClick;
-
-  const _PropertyCard(
-      {required this.property, required this.index, required this.onClick});
+  final Property property;
+  const _PropertyCard({required this.property});
 
   @override
   Widget build(BuildContext context) {
+    final imageUrl = property.propertyImages.isNotEmpty
+        ? property.propertyImages.first.url
+        : null;
+
     return GestureDetector(
-      onTap: onClick,
+      onTap: () => context.push('/properties/${property.id}'),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1E140F),
-          borderRadius: BorderRadius.circular(16),
+          color: const Color(0xFF1A1513),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
-        padding: const EdgeInsets.all(10),
+        clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: 110,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: Colors.grey.shade900,
-              ),
+            // Image Section
+            Expanded(
+              flex: 5,
               child: Stack(
-                fit: StackFit.expand,
                 children: [
-                  const Center(child: Icon(Icons.image, color: Colors.white24)),
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                          color: const Color(0xCC0D0A09),
-                          borderRadius: BorderRadius.circular(50)),
-                      child: Text(property.badge,
-                          style: const TextStyle(
-                              color: Color(0xFFDA9C5F),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900)),
-                    ),
+                  Positioned.fill(
+                    child: imageUrl != null && imageUrl.isNotEmpty
+                        ? Image.network(imageUrl, fit: BoxFit.cover)
+                        : const _PlaceholderImage(),
                   ),
                   Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                          color: const Color(0xCC2ECC71),
-                          borderRadius: BorderRadius.circular(50)),
-                      child: Text(property.status,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold)),
-                    ),
+                    top: 12,
+                    left: 12,
+                    child: _StatusBadge(status: property.status ?? 'available'),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 8),
-            AnimatedHeading(
-                text: property.title,
-                style: const TextStyle(fontSize: 14),
-                gradientColors: const [
-                  Color(0xFFFFF4E8),
-                  Color(0xFFF6D2A5),
-                  Color(0xFFDA9C5F)
-                ],
-                durationMillis: 3000),
-            Row(
-              children: [
-                const Icon(Icons.location_on,
-                    color: Color(0xFFDA9C5F), size: 14),
-                Text(property.city,
-                    style: const TextStyle(
-                        color: Color(0xFFBCA99A), fontSize: 12)),
-              ],
-            ),
-            Text(property.price,
-                style: const TextStyle(
-                    color: Color(0xFF2ECC71),
-                    fontWeight: FontWeight.w900,
-                    fontSize: 12)),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                _MiniFeature(icon: Icons.apartment, text: property.area),
-                _MiniFeature(icon: Icons.bed, text: property.bedrooms),
-                _MiniFeature(icon: Icons.bathtub, text: property.bathrooms),
-              ],
+            // Info Section
+            Expanded(
+              flex: 6,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      property.title,
+                      style: const TextStyle(
+                        color: Color(0xFFF0E5DB),
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on,
+                            color: Color(0xFFDA9C5F), size: 14),
+                        const SizedBox(width: 4),
+                        Text(
+                          property.city,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.5),
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 24, color: Colors.white10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Precio Mensual",
+                              style: TextStyle(
+                                  color: Colors.white.withOpacity(0.3),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              "\$${(property.price ?? 0).toStringAsFixed(0)}",
+                              style: const TextStyle(
+                                color: Color(0xFFDA9C5F),
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
+                        ),
+                        _InfoFeature(
+                          icon: Icons.king_bed_outlined,
+                          value: "${property.numBedrooms ?? 0}",
+                        ),
+                        _InfoFeature(
+                          icon: Icons.bathtub_outlined,
+                          value: "${property.numBathrooms ?? 0}",
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    AppActionButton(
+                      text: "Ver Detalles",
+                      onClick: () => context.push('/properties/${property.id}'),
+                      gradient: const [Color(0xFF2E1D17), Color(0xFF1B130F)],
+                      animationSeed: property.id,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -679,29 +474,129 @@ class _PropertyCard extends StatelessWidget {
   }
 }
 
-class _MiniFeature extends StatelessWidget {
-  final IconData icon;
-  final String text;
-
-  const _MiniFeature({required this.icon, required this.text});
+class _StatusBadge extends StatelessWidget {
+  final String status;
+  const _StatusBadge({required this.status});
 
   @override
   Widget build(BuildContext context) {
+    Color color = const Color(0xFF27AE60);
+    String text = "DISPONIBLE";
+
+    if (status.toLowerCase().contains('rented')) {
+      color = const Color(0xFFE74C3C);
+      text = "RENTADO";
+    }
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0x33DA9C5F),
-        borderRadius: BorderRadius.circular(50),
+        color: color.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: const Color(0xFFDA9C5F), size: 12),
-          const SizedBox(width: 4),
-          Text(text,
-              style: const TextStyle(fontSize: 10, color: Color(0xFFE7D8C8))),
-        ],
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
       ),
+    );
+  }
+}
+
+class _InfoFeature extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  const _InfoFeature({required this.icon, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Icon(icon, color: Colors.white.withOpacity(0.3), size: 16),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Color(0xFFF0E5DB),
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState();
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.home_work_outlined,
+            color: Colors.white.withOpacity(0.1), size: 80),
+        const SizedBox(height: 16),
+        const Text(
+          "No se encontraron propiedades",
+          style: TextStyle(
+            color: Color(0xFFF0E5DB),
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          "Intenta ajustar tus filtros de búsqueda.",
+          style: TextStyle(color: Colors.white.withOpacity(0.4)),
+        ),
+      ],
+    );
+  }
+}
+
+class _ErrorState extends StatelessWidget {
+  final VoidCallback onRetry;
+  const _ErrorState({required this.onRetry});
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.cloud_off, color: Color(0xFFE74C3C), size: 60),
+        const SizedBox(height: 16),
+        const Text(
+          "Error de conexión",
+          style: TextStyle(
+            color: Color(0xFFF0E5DB),
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextButton(
+          onPressed: onRetry,
+          child: const Text(
+            "Reintentar",
+            style: TextStyle(color: Color(0xFFDA9C5F), fontSize: 16),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PlaceholderImage extends StatelessWidget {
+  const _PlaceholderImage();
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFF241711),
+      child:
+          const Icon(Icons.image_outlined, color: Color(0x33DA9C5F), size: 48),
     );
   }
 }

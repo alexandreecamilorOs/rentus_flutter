@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../components/home_navbar.dart';
 import '../../components/app_action_button.dart';
 import 'package:go_router/go_router.dart';
+import '../../components/modern_view_wrapper.dart';
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
@@ -85,15 +86,15 @@ class _AboutScreenState extends State<AboutScreen>
               onNavigateContracts: () => context.go('/contracts'),
               onNavigatePayments: () => context.go('/payments'),
               onNavigateMaintenance: () => context.go('/maintenance'),
-              onNavigateMyRequests: () => context.go('/requests'),
-              onNavigateRequests: () => context.go('/requests'),
+              onNavigateMyRequests: () => context.go('/owner_requests'),
+              onNavigateRequests: () => context.go('/owner_requests'),
               onNavigateMyReports: () => context.go('/reports'),
               onNavigateSettings: () => context.go('/settings'),
             ),
           ),
         ],
       ),
-    );
+    ).modernWrapped();
   }
 
   Widget _buildSectionLabel(String text) {

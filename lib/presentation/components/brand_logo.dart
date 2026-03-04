@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../core/responsive_config.dart';
 import '../../core/theme/app_colors.dart';
 
 class BrandLogo extends StatelessWidget {
@@ -10,35 +12,34 @@ class BrandLogo extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Placeholder para el logo, puedes cambiarlo por un Image.asset si tienes la imagen
         Container(
-          width: 40,
-          height: 40,
+          width: ResponsiveConfig.getProportionateScreenWidth(40),
+          height: ResponsiveConfig.getProportionateScreenWidth(40),
           decoration: const BoxDecoration(
             color: AppColors.primary,
             shape: BoxShape.circle,
           ),
-          child: const Icon(
-            Icons.real_estate_agent, // Icono similar a rentas
+          child: Icon(
+            Icons.real_estate_agent,
             color: AppColors.white,
-            size: 24,
+            size: ResponsiveConfig.getProportionateScreenWidth(24),
           ),
         ),
-        const SizedBox(width: 8),
-        const Text(
+        SizedBox(width: ResponsiveConfig.getProportionateScreenWidth(8)),
+        Text(
           'Rent',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            fontSize: 30,
+            fontSize: ResponsiveConfig.fontSize(30),
             color: Colors.black,
             letterSpacing: -0.5,
           ),
         ),
-        const Text(
+        Text(
           'Us',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            fontSize: 30,
+            fontSize: ResponsiveConfig.fontSize(30),
             color: AppColors.primary,
             letterSpacing: -0.5,
           ),

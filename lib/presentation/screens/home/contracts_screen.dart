@@ -1,300 +1,963 @@
 import 'package:flutter/material.dart';
-import '../../components/home_navbar.dart';
-import '../../components/app_action_button.dart';
-import '../../components/animated_heading.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 
-class ContractItem {
-  final int id;
-  final String title;
-  final String address;
-  final String status;
-  final String price;
+import '../../../data/models/contract_model.dart';
+import '../../../data/providers/entity_providers.dart';
+import '../../../data/providers/repositories_providers.dart';
+import '../../components/app_action_button.dart';
 
-  ContractItem(this.id, this.title, this.address, this.status, this.price);
-}
-
-class ContractsScreen extends StatefulWidget {
+class ContractsScreen extends ConsumerStatefulWidget {
   const ContractsScreen({super.key});
 
   @override
-  State<ContractsScreen> createState() => _ContractsScreenState();
+  ConsumerState<ContractsScreen> createState() => _ContractsScreenState();
 }
 
-class _ContractsScreenState extends State<ContractsScreen> {
-  final List<ContractItem> _contracts = [
-    ContractItem(212, "Contrato Torre Alta", "Bogotá - Chapinero", "Activo",
-        "\$2.500.000"),
-    ContractItem(213, "Contrato Vista Sol", "Medellín - Laureles", "Pendiente",
-        "\$3.100.000"),
-    ContractItem(214, "Contrato Gran Reserva", "Cali - El Peñón", "Activo",
-        "\$1.900.000"),
-  ];
-  int _active = 0;
-  int _showPreview = -1;
+class _ContractsScreenState extends ConsumerState<ContractsScreen> {
+  final PageController _pageController = PageController(viewportFraction: 0.85);
+  int _currentPage = 0;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final contractsAsync = ref.watch(myContractsProvider);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF1A0E0A),
+      backgroundColor: const Color(0xFF0D0A09),
       body: Stack(
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF1A0E0A),
-                  Color(0xFF2E1D17),
-                  Color(0xFF3B2416)
-                ],
-              ),
-            ),
-          ),
+          const _CinematicBackground(),
           SafeArea(
-            bottom: false,
-            child: ListView(
-              padding: const EdgeInsets.only(
-                  left: 16, right: 16, top: 18, bottom: 84),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const AnimatedHeading(
-                    text: "Contratos",
-                    style: TextStyle(fontSize: 30),
-                    gradientColors: [
-                      Color(0xFFFFF2E0),
-                      Color(0xFFF6D2A5),
-                      Color(0xFFDA9C5F)
-                    ],
-                    durationMillis: 2800),
-                const SizedBox(height: 4),
-                const Text(
-                    "Gestiona y revisa tus contratos con animaciones y acciones rápidas.",
-                    style: TextStyle(color: Color(0xFFD4C5B9), fontSize: 13)),
-                const SizedBox(height: 14),
-                ..._contracts.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final contract = entry.value;
-                  final isActive = _active == index;
-
-                  return GestureDetector(
-                    onTap: () => setState(() => _active = index),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      margin: const EdgeInsets.only(bottom: 14),
-                      transform: Matrix4.identity()
-                        ..scale(isActive ? 1.0 : 0.95),
-                      transformAlignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: const Color(0xF23A2318),
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: isActive
-                            ? [
-                                const BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 10,
-                                    offset: Offset(0, 4))
-                              ]
-                            : [
-                                const BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 4,
-                                    offset: Offset(0, 2))
-                              ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              height: 150,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                  color: Colors.grey.shade900,
-                                  borderRadius: BorderRadius.circular(12)),
-                              child: const Icon(Icons.image,
-                                  size: 48, color: Colors.white24),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Expanded(
-                                    child: Text(contract.title,
-                                        style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold))),
-                                Text(contract.status,
-                                    style: TextStyle(
-                                        color: contract.status == "Activo"
-                                            ? const Color(0xFF2ECC71)
-                                            : const Color(0xFFF39C12),
-                                        fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                            Text(contract.address,
-                                style: const TextStyle(
-                                    color: Color(0xFFD4C5B9), fontSize: 12)),
-                            Text("${contract.price} / mes",
-                                style: const TextStyle(
-                                    color: Color(0xFFDA9C5F),
-                                    fontWeight: FontWeight.w900)),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: AppActionButton(
-                                    text: "Vista previa",
-                                    onClick: () =>
-                                        setState(() => _showPreview = index),
-                                    gradient: const [
-                                      Color(0xFFDA9C5F),
-                                      Color(0xFFB8791F),
-                                      Color(0xFFDA9C5F)
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  width: 52,
-                                  height: 52,
-                                  decoration: BoxDecoration(
-                                      gradient: const LinearGradient(colors: [
-                                        Color(0xFF3498DB),
-                                        Color(0xFF2980B9)
-                                      ]),
-                                      borderRadius: BorderRadius.circular(14)),
-                                  child: IconButton(
-                                      icon: const Icon(Icons.download,
-                                          color: Colors.white),
-                                      onPressed: () {}),
-                                )
-                              ],
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        if (_active > 0) setState(() => _active--);
-                      },
-                      child: Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                            color: const Color(0xAA562C1D),
-                            borderRadius: BorderRadius.circular(22)),
-                        child:
-                            const Icon(Icons.chevron_left, color: Colors.white),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Text("${_active + 1} / ${_contracts.length}",
-                        style: const TextStyle(
-                            color: Color(0xFFF0E5DB),
-                            fontWeight: FontWeight.bold)),
-                    const SizedBox(width: 16),
-                    GestureDetector(
-                      onTap: () {
-                        if (_active < _contracts.length - 1)
-                          setState(() => _active++);
-                      },
-                      child: Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                            color: const Color(0xAA562C1D),
-                            borderRadius: BorderRadius.circular(22)),
-                        child: const Icon(Icons.chevron_right,
-                            color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: HomeNavbar(
-              selectedTab: "",
-              onNavigateHome: () => context.go('/home'),
-              onNavigateProperties: () => context.go('/properties'),
-              onNavigateAbout: () => context.go('/about'),
-              onNavigateProfile: () => context.go('/profile'),
-              onNavigateNotifications: () => context.go('/notifications'),
-              onNavigateContracts: () => context.go('/contracts'),
-              onNavigatePayments: () => context.go('/payments'),
-              onNavigateMaintenance: () => context.go('/maintenance'),
-              onNavigateMyRequests: () => context.go('/requests'),
-              onNavigateRequests: () => context.go('/requests'),
-              onNavigateMyReports: () => context.go('/reports'),
-              onNavigateSettings: () => context.go('/settings'),
-            ),
-          ),
-          if (_showPreview >= 0)
-            Container(
-              color: Colors.black54,
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: const Color(0xFF2E1D17),
-                          borderRadius: BorderRadius.circular(18)),
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                // Header
+                Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.description,
-                                  color: Color(0xFFDA9C5F)),
-                              const SizedBox(width: 8),
-                              Text(_contracts[_showPreview].title,
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16)),
-                            ],
+                          IconButton(
+                            onPressed: () => context.pop(),
+                            icon: const Icon(Icons.arrow_back,
+                                color: Color(0xFFF0E5DB)),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
                           ),
-                          const SizedBox(height: 10),
-                          Text("Dirección: ${_contracts[_showPreview].address}",
-                              style: const TextStyle(
-                                  color: Color(0xFFD4C5B9), fontSize: 13)),
-                          Text("Estado: ${_contracts[_showPreview].status}",
-                              style: const TextStyle(
-                                  color: Color(0xFFD4C5B9), fontSize: 13)),
-                          Text("Valor: ${_contracts[_showPreview].price}",
-                              style: const TextStyle(
-                                  color: Color(0xFFDA9C5F),
-                                  fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 14),
-                          AppActionButton(
-                            text: "Cerrar",
-                            onClick: () => setState(() => _showPreview = -1),
-                            gradient: const [
-                              Color(0xFFE74C3C),
-                              Color(0xFFC0392B),
-                              Color(0xFFE74C3C)
+                          const SizedBox(width: 16),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "MIS DOCUMENTOS",
+                                style: TextStyle(
+                                  color:
+                                      const Color(0xFFDA9C5F).withOpacity(0.8),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 2.0,
+                                ),
+                              ),
+                              const Text(
+                                "Contratos",
+                                style: TextStyle(
+                                  color: Color(0xFFF0E5DB),
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
                             ],
                           ),
                         ],
                       ),
-                    ),
+                      const SizedBox(height: 8),
+                      Text(
+                        "Gestiona tus acuerdos de arrendamiento",
+                        style: TextStyle(
+                          color: const Color(0xFFF0E5DB).withOpacity(0.5),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+
+                const SizedBox(height: 20),
+
+                // Carousel
+                Expanded(
+                  child: contractsAsync.when(
+                    data: (contracts) {
+                      if (contracts.isEmpty) {
+                        return const _EmptyContracts(
+                            key: ValueKey('empty_contracts'));
+                      }
+
+                      return Column(
+                        children: [
+                          Expanded(
+                            child: PageView.builder(
+                              controller: _pageController,
+                              onPageChanged: (index) =>
+                                  setState(() => _currentPage = index),
+                              itemCount: contracts.length,
+                              itemBuilder: (context, index) {
+                                final contract = contracts[index];
+                                return _ContractCarouselItem(
+                                  key: ValueKey(contract.id),
+                                  contract: contract,
+                                  isActive: _currentPage == index,
+                                  onReview: () =>
+                                      _showReviewModal(context, contract),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          _CarouselIndicator(
+                              count: contracts.length, current: _currentPage),
+                          const SizedBox(height: 40),
+                        ],
+                      );
+                    },
+                    loading: () => const Center(
+                        child: CircularProgressIndicator(
+                            color: Color(0xFFDA9C5F))),
+                    error: (e, s) => Center(
+                        child: Text("Error: $e",
+                            style: const TextStyle(color: Colors.white))),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showReviewModal(BuildContext context, Contract contract) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1A1412),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => _ContractReviewSheet(contract: contract),
+    );
+  }
+}
+
+class _CinematicBackground extends StatelessWidget {
+  const _CinematicBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF0D0A09), Color(0xFF140F0D), Color(0xFF1A1412)],
+            ),
+          ),
+        ),
+        // Glow Orbs
+        Positioned(
+          top: -150,
+          left: -100,
+          child: _GlowOrb(
+            color: const Color(0xFFDA1155).withOpacity(0.05),
+            size: 400,
+          ),
+        ),
+        Positioned(
+          bottom: -100,
+          right: -100,
+          child: _GlowOrb(
+            color: const Color(0xFFDA9C5F).withOpacity(0.1),
+            size: 350,
+          ),
+        ),
+        const _CinematicParticles(),
+      ],
+    );
+  }
+}
+
+class _CinematicParticles extends StatefulWidget {
+  const _CinematicParticles();
+
+  @override
+  State<_CinematicParticles> createState() => _CinematicParticlesState();
+}
+
+class _CinematicParticlesState extends State<_CinematicParticles>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 15),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return CustomPaint(
+          painter: _ParticlesPainter(phase: _controller.value),
+          child: Container(),
+        );
+      },
+    );
+  }
+}
+
+class _ParticlesPainter extends CustomPainter {
+  final double phase;
+  _ParticlesPainter({required this.phase});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final paint = Paint()..style = PaintingStyle.fill;
+
+    for (int i = 0; i < 40; i++) {
+      double x = (i * 137 + phase * 50) % w;
+      double y = (i * 223 - phase * 80) % h;
+      if (y < 0) y += h;
+
+      paint.color = Colors.white.withOpacity(0.05 + (i % 5) * 0.01);
+      canvas.drawCircle(Offset(x, y), 0.5 + (i % 2), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ParticlesPainter oldDelegate) {
+    return oldDelegate.phase != phase;
+  }
+}
+
+class _GlowOrb extends StatelessWidget {
+  final Color color;
+  final double size;
+  const _GlowOrb({required this.color, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: color,
+            blurRadius: 100,
+            spreadRadius: 50,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ContractCarouselItem extends StatefulWidget {
+  final Contract contract;
+  final bool isActive;
+  final VoidCallback onReview;
+
+  const _ContractCarouselItem({
+    super.key,
+    required this.contract,
+    required this.isActive,
+    required this.onReview,
+  });
+
+  @override
+  State<_ContractCarouselItem> createState() => _ContractCarouselItemState();
+}
+
+class _ContractCarouselItemState extends State<_ContractCarouselItem>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+    if (widget.contract.status.toLowerCase() == 'pending') {
+      _pulseController.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currencyFormat =
+        NumberFormat.currency(locale: 'es_CO', symbol: '\$', decimalDigits: 0);
+    final isPending = widget.contract.status.toLowerCase() == 'pending';
+
+    return AnimatedScale(
+      scale: widget.isActive ? 1.0 : 0.9,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOutBack,
+      child: AnimatedBuilder(
+        animation: _pulseController,
+        builder: (context, child) {
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E1410),
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(
+                color: isPending
+                    ? const Color(0xFFDA9C5F)
+                        .withOpacity(0.3 + (0.4 * _pulseController.value))
+                    : const Color(0xFFDA9C5F).withOpacity(0.15),
+                width: isPending ? 2.5 : 1,
               ),
-            )
+              boxShadow: [
+                BoxShadow(
+                  color: isPending
+                      ? const Color(0xFFDA9C5F)
+                          .withOpacity(0.1 * _pulseController.value)
+                      : Colors.black.withOpacity(0.4),
+                  blurRadius: 25,
+                  spreadRadius: isPending ? 5 * _pulseController.value : 0,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(32),
+              child: Column(
+                children: [
+                  // Image & Header
+                  Expanded(
+                    flex: 4,
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          decoration:
+                              const BoxDecoration(color: Color(0xFF2D1D18)),
+                          child: widget.contract.property?.propertyImages
+                                      .isNotEmpty ==
+                                  true
+                              ? Image.network(
+                                  widget.contract.property!.propertyImages.first
+                                      .url,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => const Icon(
+                                      Icons.home_work_rounded,
+                                      color: Color(0xFFDA9C5F),
+                                      size: 60),
+                                )
+                              : const Icon(Icons.home_work_rounded,
+                                  color: Color(0xFFDA9C5F), size: 60),
+                        ),
+                        // Overlay Gradient
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withOpacity(0.8)
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 20,
+                          right: 20,
+                          child: _StatusBadge(status: widget.contract.status),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Info & Actions
+                  Expanded(
+                    flex: 5,
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.contract.property?.title ??
+                                "Contrato Rentus",
+                            style: const TextStyle(
+                              color: Color(0xFFF0E5DB),
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Icon(Icons.calendar_today_rounded,
+                                  size: 14, color: Color(0xFFDA9C5F)),
+                              const SizedBox(width: 8),
+                              Text(
+                                "Desde ${widget.contract.startDate ?? "TBD"}",
+                                style: TextStyle(
+                                    color: const Color(0xFFF0E5DB)
+                                        .withOpacity(0.5),
+                                    fontSize: 13),
+                              ),
+                            ],
+                          ),
+                          const Spacer(),
+                          const Divider(color: Color(0x1AFFFFFF)),
+                          const Spacer(),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _DetailInfo(
+                                label: "MENSUALIDAD",
+                                value: currencyFormat
+                                    .format(widget.contract.monthlyPrice ?? 0),
+                              ),
+                              _DetailInfo(
+                                label: "DURACIÓN",
+                                value: "12 meses",
+                                alignRight: true,
+                              ),
+                            ],
+                          ),
+                          const Spacer(),
+                          if (isPending)
+                            AppActionButton(
+                              text: "REVISAR Y FIRMAR",
+                              onClick: widget.onReview,
+                              gradient: const [
+                                Color(0xFFDA9C5F),
+                                Color(0xFFB8791F)
+                              ],
+                              contentColor: Colors.black,
+                            )
+                          else
+                            AppActionButton(
+                              text: "DESCARGAR PDF",
+                              onClick: () {}, // Download logic
+                              isSecondary: true,
+                              contentColor: const Color(0xFFDA9C5F),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final String status;
+  const _StatusBadge({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    Color color;
+    switch (status.toLowerCase()) {
+      case 'active':
+        color = const Color(0xFF2ECC71);
+        break;
+      case 'pending':
+        color = const Color(0xFFDA9C5F);
+        break;
+      case 'expired':
+        color = const Color(0xFFE74C3C);
+        break;
+      default:
+        color = Colors.grey;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(100),
+        border: Border.all(color: color.withOpacity(0.5)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            status.toUpperCase(),
+            style: TextStyle(
+              color: color,
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.0,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailInfo extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool alignRight;
+
+  const _DetailInfo(
+      {required this.label, required this.value, this.alignRight = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment:
+          alignRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: const Color(0xFFDA9C5F).withOpacity(0.6),
+            fontSize: 9,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.0,
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Color(0xFFF0E5DB),
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CarouselIndicator extends StatelessWidget {
+  final int count;
+  final int current;
+
+  const _CarouselIndicator({required this.count, required this.current});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(count, (index) {
+        final bool isSelected = current == index;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 400),
+          width: isSelected ? 32 : 8,
+          height: 6,
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          decoration: BoxDecoration(
+            gradient: isSelected
+                ? const LinearGradient(
+                    colors: [Color(0xFFDA9C5F), Color(0xFFB8791F)])
+                : null,
+            color: isSelected ? null : const Color(0x33DA9C5F),
+            borderRadius: BorderRadius.circular(100),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFFDA9C5F).withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    )
+                  ]
+                : null,
+          ),
+        );
+      }),
+    );
+  }
+}
+
+class _ContractReviewSheet extends ConsumerStatefulWidget {
+  final Contract contract;
+
+  const _ContractReviewSheet({required this.contract});
+
+  @override
+  ConsumerState<_ContractReviewSheet> createState() =>
+      _ContractReviewSheetState();
+}
+
+class _ContractReviewSheetState extends ConsumerState<_ContractReviewSheet> {
+  bool _accepted = false;
+  bool _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final currencyFormat =
+        NumberFormat.currency(locale: 'es_CO', symbol: '\$', decimalDigits: 0);
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      height: MediaQuery.of(context).size.height * 0.9,
+      decoration: const BoxDecoration(
+        color: Color(0xFF0D0A09),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0x33DA9C5F),
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "DOCUMENTO LEGAL",
+                    style: TextStyle(
+                        color: Color(0xFFDA9C5F),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2.0),
+                  ),
+                  Text(
+                    "Revisión de Firma",
+                    style: TextStyle(
+                        color: Color(0xFFF0E5DB),
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5),
+                  ),
+                ],
+              ),
+              IconButton(
+                onPressed: () => context.pop(),
+                icon: const Icon(Icons.close_rounded, color: Color(0xFFDA9C5F)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _SectionTitle(title: "Resumen del Acuerdo"),
+                  const SizedBox(height: 16),
+                  _SummaryRow(
+                      label: "Propiedad",
+                      value: widget.contract.property?.title ?? "N/A"),
+                  _SummaryRow(
+                      label: "Arrendador",
+                      value: widget.contract.landlord?.name ?? "N/A"),
+                  _SummaryRow(
+                      label: "Valor Mensual",
+                      value: currencyFormat
+                          .format(widget.contract.monthlyPrice ?? 0),
+                      isGold: true),
+                  _SummaryRow(
+                      label: "Depósito Inicial",
+                      value:
+                          currencyFormat.format(widget.contract.deposit ?? 0)),
+                  _SummaryRow(
+                      label: "Fecha Inicio",
+                      value: widget.contract.startDate ?? "N/A"),
+                  _SummaryRow(
+                      label: "Fecha Fin",
+                      value: widget.contract.endDate ?? "N/A"),
+                  const SizedBox(height: 32),
+                  _SectionTitle(title: "Cláusulas Especiales"),
+                  const SizedBox(height: 16),
+                  if (widget.contract.clauses.isEmpty)
+                    const Text("No se definieron cláusulas adicionales.",
+                        style: TextStyle(color: Colors.white24, fontSize: 13))
+                  else
+                    ...widget.contract.clauses.map((c) => Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.verified_user_rounded,
+                                  color: Color(0xFFDA9C5F), size: 18),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                  child: Text(c,
+                                      style: TextStyle(
+                                          color: const Color(0xFFF0E5DB)
+                                              .withOpacity(0.7),
+                                          fontSize: 14,
+                                          height: 1.5))),
+                            ],
+                          ),
+                        )),
+                  const SizedBox(height: 32),
+                  _AgreementCheckbox(
+                    value: _accepted,
+                    onChanged: (v) => setState(() => _accepted = v ?? false),
+                  ),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
+          ),
+          AppActionButton(
+            text: _isLoading ? "FIRMANDO..." : "CONFIRMAR Y FIRMAR",
+            onClick: _handleAccept,
+            isEnabled: _accepted && !_isLoading,
+            gradient: const [Color(0xFFDA9C5F), Color(0xFFB8791F)],
+            contentColor: Colors.black,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleAccept() async {
+    setState(() => _isLoading = true);
+    try {
+      await ref
+          .read(contractRepositoryProvider)
+          .acceptContract(widget.contract.id);
+      if (mounted) {
+        context.pop();
+        ref.invalidate(myContractsProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text("Contrato firmado exitosamente."),
+              backgroundColor: Colors.green),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+}
+
+class _SummaryRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool isGold;
+
+  const _SummaryRow(
+      {required this.label, required this.value, this.isGold = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label,
+              style: TextStyle(
+                  color: const Color(0xFFF0E5DB).withOpacity(0.5),
+                  fontSize: 14)),
+          Text(
+            value,
+            style: TextStyle(
+              color: isGold ? const Color(0xFFDA9C5F) : const Color(0xFFF0E5DB),
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  final String title;
+  const _SectionTitle({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            color: Color(0xFFF0E5DB),
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -0.5,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          width: 40,
+          height: 2,
+          decoration: BoxDecoration(
+            color: const Color(0xFFDA9C5F),
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AgreementCheckbox extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool?> onChanged;
+
+  const _AgreementCheckbox({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: value ? const Color(0x1ADA9C5F) : const Color(0x0AFFFFFF),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: value ? const Color(0xFFDA9C5F) : const Color(0x1AFFFFFF),
+            width: value ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: value ? const Color(0xFFDA9C5F) : Colors.transparent,
+                border: Border.all(
+                  color: value
+                      ? const Color(0xFFDA9C5F)
+                      : const Color(0xFFDA9C5F).withOpacity(0.5),
+                ),
+              ),
+              child: value
+                  ? const Icon(Icons.check, size: 16, color: Colors.black)
+                  : null,
+            ),
+            const SizedBox(width: 16),
+            const Expanded(
+              child: Text(
+                "Acepto los términos y certifico mi identidad para la firma legal.",
+                style: TextStyle(
+                  color: Color(0xFFF0E5DB),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyContracts extends StatelessWidget {
+  const _EmptyContracts({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: const Color(0x0AFFFFFF),
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0x1ADA9C5F)),
+            ),
+            child: const Icon(Icons.description_rounded,
+                size: 64, color: Color(0xFFDA9C5F)),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            "Sin contratos pendientes",
+            style: TextStyle(
+                color: Color(0xFFF0E5DB),
+                fontSize: 20,
+                fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Tus acuerdos aparecerán aquí una vez generados.",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: const Color(0xFFF0E5DB).withOpacity(0.5), fontSize: 13),
+          ),
         ],
       ),
     );
