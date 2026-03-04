@@ -42,7 +42,8 @@ class _GlobalAnimatedShellState extends State<GlobalAnimatedShell>
         final width = constraints.maxWidth;
         final isSmallMobile = width < 360;
         final isTablet = width >= 600;
-        final horizontalPadding = isSmallMobile ? 8.0 : (isTablet ? 20.0 : 12.0);
+        final horizontalPadding =
+            isSmallMobile ? 8.0 : (isTablet ? 20.0 : 12.0);
         final maxContentWidth = width >= 1200
             ? 1080.0
             : width >= 900
@@ -99,9 +100,11 @@ class _GlobalAnimatedShellState extends State<GlobalAnimatedShell>
                           switchInCurve: Curves.easeOutCubic,
                           switchOutCurve: Curves.easeInCubic,
                           child: KeyedSubtree(
-                            key: ValueKey<String>(widget.child.runtimeType.toString()),
+                            key: ValueKey<String>(
+                                widget.child.runtimeType.toString()),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(isTablet ? 22 : 0),
+                              borderRadius:
+                                  BorderRadius.circular(isTablet ? 22 : 0),
                               child: widget.child,
                             ),
                           ),
@@ -139,9 +142,8 @@ class _GlobalParticlesPainter extends CustomPainter {
       final x = (baseX + (phase * driftX)) % size.width;
       final y = (baseY + (phase * driftY)) % size.height;
 
-      paint.color = i.isEven
-          ? const Color(0x26F4E5D6)
-          : const Color(0x26FFD59A);
+      paint.color =
+          i.isEven ? const Color(0x26F4E5D6) : const Color(0x26FFD59A);
 
       canvas.drawCircle(Offset(x, y), radius, paint);
     }

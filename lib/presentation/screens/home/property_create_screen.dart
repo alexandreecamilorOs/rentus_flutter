@@ -755,8 +755,8 @@ class _LuxuryTextField extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFF130F0D), // Much darker background
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-                color: const Color(0xFFDA9C5F).withOpacity(0.12)),
+            border:
+                Border.all(color: const Color(0xFFDA9C5F).withOpacity(0.12)),
           ),
           child: TextFormField(
             controller: controller,

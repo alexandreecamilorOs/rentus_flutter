@@ -736,9 +736,7 @@ class _Sidebar extends ConsumerWidget {
         border: Border.all(color: const Color(0xFFDA9C5F).withOpacity(0.25)),
         boxShadow: const [
           BoxShadow(
-              color: Colors.black54,
-              blurRadius: 30,
-              offset: Offset(0, 10))
+              color: Colors.black54, blurRadius: 30, offset: Offset(0, 10))
         ],
       ),
       child: Column(
@@ -798,7 +796,8 @@ class _Sidebar extends ConsumerWidget {
           const SizedBox(height: 20),
           const Divider(color: Colors.white10),
           const SizedBox(height: 20),
-          const _MetaRow(icon: Icons.access_time, label: "Publicado hace 2 días"),
+          const _MetaRow(
+              icon: Icons.access_time, label: "Publicado hace 2 días"),
           const SizedBox(height: 12),
           const _MetaRow(
               icon: Icons.remove_red_eye_outlined,

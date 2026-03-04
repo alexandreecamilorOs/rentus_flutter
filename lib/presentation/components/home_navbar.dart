@@ -47,23 +47,61 @@ class _HomeNavbarState extends State<HomeNavbar> {
       isScrollControlled: true,
       builder: (context) {
         final menuItems = [
-          {'label': 'Mi Perfil', 'icon': Icons.person, 'action': widget.onNavigateProfile},
-          {'label': 'Notificaciones', 'icon': Icons.notifications, 'action': widget.onNavigateNotifications},
-          {'label': 'Contratos', 'icon': Icons.apartment, 'action': widget.onNavigateContracts},
-          {'label': 'Pagos', 'icon': Icons.payments, 'action': widget.onNavigatePayments},
-          {'label': 'Mantenimiento', 'icon': Icons.build, 'action': widget.onNavigateMaintenance},
-          {'label': 'Solicitudes (Dueño)', 'icon': Icons.description, 'action': widget.onNavigateRequests},
-          {'label': 'Mis Solicitudes', 'icon': Icons.sms, 'action': widget.onNavigateMyRequests},
-          {'label': 'Mis Reportes', 'icon': Icons.flag, 'action': widget.onNavigateMyReports},
-          {'label': 'Ajustes', 'icon': Icons.settings, 'action': widget.onNavigateSettings},
+          {
+            'label': 'Mi Perfil',
+            'icon': Icons.person,
+            'action': widget.onNavigateProfile
+          },
+          {
+            'label': 'Notificaciones',
+            'icon': Icons.notifications,
+            'action': widget.onNavigateNotifications
+          },
+          {
+            'label': 'Contratos',
+            'icon': Icons.apartment,
+            'action': widget.onNavigateContracts
+          },
+          {
+            'label': 'Pagos',
+            'icon': Icons.payments,
+            'action': widget.onNavigatePayments
+          },
+          {
+            'label': 'Mantenimiento',
+            'icon': Icons.build,
+            'action': widget.onNavigateMaintenance
+          },
+          {
+            'label': 'Solicitudes (Dueño)',
+            'icon': Icons.description,
+            'action': widget.onNavigateRequests
+          },
+          {
+            'label': 'Mis Solicitudes',
+            'icon': Icons.sms,
+            'action': widget.onNavigateMyRequests
+          },
+          {
+            'label': 'Mis Reportes',
+            'icon': Icons.flag,
+            'action': widget.onNavigateMyReports
+          },
+          {
+            'label': 'Ajustes',
+            'icon': Icons.settings,
+            'action': widget.onNavigateSettings
+          },
         ];
 
         return Container(
           margin: EdgeInsets.all(ResponsiveConfig.adaptiveSpacing(mobile: 12)),
-          padding: ResponsiveConfig.adaptivePadding(horizontal: 18, vertical: 16),
+          padding:
+              ResponsiveConfig.adaptivePadding(horizontal: 18, vertical: 16),
           decoration: BoxDecoration(
             color: const Color(0xFFEDE8E2).withOpacity(0.82),
-            borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(24)),
+            borderRadius: BorderRadius.circular(
+                ResponsiveConfig.getProportionateScreenWidth(24)),
             border: Border.all(color: Colors.white.withOpacity(0.4)),
           ),
           child: Column(
@@ -79,33 +117,46 @@ class _HomeNavbarState extends State<HomeNavbar> {
                   color: const Color(0xFF2C3E50),
                 ),
               ),
-              SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(16)),
+              SizedBox(
+                  height: ResponsiveConfig.getProportionateScreenHeight(16)),
               ...menuItems.map((item) => InkWell(
                     onTap: () {
                       Navigator.pop(context);
                       (item['action'] as VoidCallback?)?.call();
                     },
-                    borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(14)),
+                    borderRadius: BorderRadius.circular(
+                        ResponsiveConfig.getProportionateScreenWidth(14)),
                     child: Padding(
                       padding: EdgeInsets.symmetric(
-                        vertical: ResponsiveConfig.getProportionateScreenHeight(10),
+                        vertical:
+                            ResponsiveConfig.getProportionateScreenHeight(10),
                       ),
                       child: Row(
                         children: [
                           Container(
-                            width: ResponsiveConfig.getProportionateScreenWidth(36),
-                            height: ResponsiveConfig.getProportionateScreenWidth(36),
+                            width: ResponsiveConfig.getProportionateScreenWidth(
+                                36),
+                            height:
+                                ResponsiveConfig.getProportionateScreenWidth(
+                                    36),
                             decoration: BoxDecoration(
                               color: const Color(0xFFF3E3D0),
-                              borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(10)),
+                              borderRadius: BorderRadius.circular(
+                                  ResponsiveConfig.getProportionateScreenWidth(
+                                      10)),
                             ),
                             child: Icon(
                               item['icon'] as IconData,
                               color: const Color(0xFF3B251D),
-                              size: ResponsiveConfig.getProportionateScreenWidth(20),
+                              size:
+                                  ResponsiveConfig.getProportionateScreenWidth(
+                                      20),
                             ),
                           ),
-                          SizedBox(width: ResponsiveConfig.getProportionateScreenWidth(12)),
+                          SizedBox(
+                              width:
+                                  ResponsiveConfig.getProportionateScreenWidth(
+                                      12)),
                           Expanded(
                             child: Text(
                               item['label'] as String,
@@ -137,10 +188,12 @@ class _HomeNavbarState extends State<HomeNavbar> {
 
     return Container(
       height: ResponsiveConfig.getProportionateScreenHeight(navbarHeight),
-      margin: EdgeInsets.symmetric(horizontal: ResponsiveConfig.adaptiveSpacing(mobile: 8)),
+      margin: EdgeInsets.symmetric(
+          horizontal: ResponsiveConfig.adaptiveSpacing(mobile: 8)),
       padding: ResponsiveConfig.adaptivePadding(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(24)),
+        borderRadius: BorderRadius.circular(
+            ResponsiveConfig.getProportionateScreenWidth(24)),
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -309,7 +362,8 @@ class _WaveIconButtonState extends State<_WaveIconButton>
         width: ResponsiveConfig.getProportionateScreenWidth(widget.width),
         height: ResponsiveConfig.getProportionateScreenHeight(widget.height),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(18)),
+          borderRadius: BorderRadius.circular(
+              ResponsiveConfig.getProportionateScreenWidth(18)),
           gradient: LinearGradient(
             colors: widget.gradient,
             begin: Alignment.topLeft,
@@ -328,8 +382,11 @@ class _WaveIconButtonState extends State<_WaveIconButton>
             ),
             Icon(
               widget.icon,
-              color: widget.selected ? const Color(0xFFFFE7C7) : Colors.white.withOpacity(0.82),
-              size: ResponsiveConfig.getProportionateScreenWidth(widget.selected ? 24 : 22),
+              color: widget.selected
+                  ? const Color(0xFFFFE7C7)
+                  : Colors.white.withOpacity(0.82),
+              size: ResponsiveConfig.getProportionateScreenWidth(
+                  widget.selected ? 24 : 22),
             ),
           ],
         ),
