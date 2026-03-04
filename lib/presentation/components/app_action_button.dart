@@ -12,6 +12,11 @@ class AppActionButton extends StatefulWidget {
   final List<Color> gradient;
   final EdgeInsets paddingValues;
   final int animationSeed;
+  final bool isSecondary;
+  final Color? borderColor;
+  final IconData? icon;
+  final double? width;
+  final double? height;
 
   const AppActionButton({
     super.key,
@@ -24,8 +29,14 @@ class AppActionButton extends StatefulWidget {
       Color(0xFFC9915C),
       Color(0xFFDEA46E)
     ],
-    this.paddingValues = const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    this.paddingValues =
+        const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     this.animationSeed = 101,
+    this.isSecondary = false,
+    this.borderColor,
+    this.icon,
+    this.width,
+    this.height,
   });
 
   @override
@@ -59,7 +70,8 @@ class _AppActionButtonState extends State<AppActionButton>
     super.dispose();
   }
 
-  void _handleTapDown(TapDownDetails details) => setState(() => _isPressed = true);
+  void _handleTapDown(TapDownDetails details) =>
+      setState(() => _isPressed = true);
 
   void _handleTapUp(TapUpDetails details) {
     setState(() => _isPressed = false);
@@ -70,7 +82,8 @@ class _AppActionButtonState extends State<AppActionButton>
 
   @override
   Widget build(BuildContext context) {
-    final borderRadius = BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(16));
+    final borderRadius =
+        BorderRadius.circular(ResponsiveConfig.getProportionateScreenWidth(16));
 
     return GestureDetector(
       onTapDown: _handleTapDown,
@@ -80,22 +93,35 @@ class _AppActionButtonState extends State<AppActionButton>
         scale: _isPressed ? 0.98 : 1,
         duration: const Duration(milliseconds: 130),
         child: Container(
-          width: double.infinity,
-          height: ResponsiveConfig.getProportionateScreenHeight(52),
+          width: widget.width ?? double.infinity,
+          height: widget.height ??
+              ResponsiveConfig.getProportionateScreenHeight(52),
           decoration: BoxDecoration(
             borderRadius: borderRadius,
-            gradient: LinearGradient(
-              colors: widget.gradient,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xAA8A5D34).withOpacity(0.28),
-                blurRadius: ResponsiveConfig.getProportionateScreenWidth(28),
-                offset: Offset(0, ResponsiveConfig.getProportionateScreenHeight(12)),
-              ),
-            ],
+            color: widget.isSecondary ? Colors.white.withOpacity(0.05) : null,
+            gradient: widget.isSecondary
+                ? null
+                : LinearGradient(
+                    colors: widget.gradient,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+            border: widget.isSecondary
+                ? Border.all(
+                    color: widget.borderColor ??
+                        const Color(0xFFDA9C5F).withOpacity(0.25))
+                : null,
+            boxShadow: widget.isSecondary
+                ? null
+                : [
+                    BoxShadow(
+                      color: const Color(0xAA8A5D34).withOpacity(0.28),
+                      blurRadius:
+                          ResponsiveConfig.getProportionateScreenWidth(28),
+                      offset: Offset(
+                          0, ResponsiveConfig.getProportionateScreenHeight(12)),
+                    ),
+                  ],
           ),
           clipBehavior: Clip.antiAlias,
           child: Stack(
@@ -122,14 +148,23 @@ class _AppActionButtonState extends State<AppActionButton>
               Center(
                 child: Padding(
                   padding: widget.paddingValues,
-                  child: Text(
-                    widget.text,
-                    style: TextStyle(
-                      color: widget.contentColor,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.6,
-                      fontSize: ResponsiveConfig.fontSize(16),
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (widget.icon != null) ...[
+                        Icon(widget.icon, color: widget.contentColor, size: 20),
+                        const SizedBox(width: 8),
+                      ],
+                      Text(
+                        widget.text,
+                        style: TextStyle(
+                          color: widget.contentColor,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.6,
+                          fontSize: ResponsiveConfig.fontSize(16),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -161,11 +196,13 @@ class _BubblePainter extends CustomPainter {
       final x = (originX + phase * speedX) % size.width;
       final y = (originY + phase * speedY) % size.height;
 
-      paint.color = Colors.white.withOpacity((0.08 + rand.nextDouble() * 0.35).clamp(0.0, 1.0));
+      paint.color = Colors.white
+          .withOpacity((0.08 + rand.nextDouble() * 0.35).clamp(0.0, 1.0));
       canvas.drawCircle(Offset(x, y), radius, paint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant _BubblePainter oldDelegate) => oldDelegate.phase != phase;
+  bool shouldRepaint(covariant _BubblePainter oldDelegate) =>
+      oldDelegate.phase != phase;
 }

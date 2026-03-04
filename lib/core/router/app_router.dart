@@ -111,13 +111,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           path: AppRoutes.properties,
           builder: (_, __) => const PropertiesScreen()),
       GoRoute(
+          path: AppRoutes.propertyCreate,
+          builder: (_, __) => const PropertyCreateScreen()),
+      GoRoute(
         path: AppRoutes.propertyDetail,
         builder: (_, state) => PropertyDetailScreen(
             propertyId: int.tryParse(state.pathParameters['id'] ?? '') ?? 0),
       ),
-      GoRoute(
-          path: AppRoutes.propertyCreate,
-          builder: (_, __) => const PropertyCreateScreen()),
       GoRoute(
         path: AppRoutes.propertyEdit,
         builder: (_, state) => PropertyEditScreen(
