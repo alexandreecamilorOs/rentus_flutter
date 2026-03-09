@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
+import '../../core/responsive_config.dart';
 
 class AuthTabRow extends StatelessWidget {
   final bool isLoginSelected;
@@ -18,35 +18,42 @@ class AuthTabRow extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final totalWidth = constraints.maxWidth;
-        final tabWidth =
-            (totalWidth - 8) / 2; // -8 por el padding (4 a cada lado)
+        final tabWidth = (totalWidth - 10) / 2;
 
         return Container(
           width: double.infinity,
-          height: 48,
-          padding: const EdgeInsets.all(4),
+          height: ResponsiveConfig.getProportionateScreenHeight(54),
+          padding: const EdgeInsets.all(5),
           decoration: BoxDecoration(
-            color: AppColors.textSecondary.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(16),
+            color: const Color(0x33000000), // Deep inset shadow track
+            borderRadius: BorderRadius.circular(
+                ResponsiveConfig.getProportionateScreenWidth(20)),
+            border: Border.all(color: const Color(0x1AFFFFFF), width: 1),
           ),
           child: Stack(
             children: [
               AnimatedPositioned(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeOutCubic,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutBack,
                 left: isLoginSelected ? 0 : tabWidth,
                 top: 0,
                 bottom: 0,
                 width: tabWidth,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(12),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFE5A95D), Color(0xFFC78133)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(
+                        ResponsiveConfig.getProportionateScreenWidth(16)),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                        color: const Color(0xFFE5A95D).withOpacity(0.4),
+                        blurRadius: 12,
+                        spreadRadius: 1,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
@@ -59,14 +66,19 @@ class AuthTabRow extends StatelessWidget {
                       onTap: onLoginClick,
                       behavior: HitTestBehavior.opaque,
                       child: Center(
-                        child: Text(
-                          'Iniciar Sesión',
+                        child: AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 200),
                           style: TextStyle(
                             color: isLoginSelected
-                                ? AppColors.primary
-                                : AppColors.textSecondary,
-                            fontWeight: FontWeight.w600,
+                                ? Colors.white
+                                : const Color(0x99FFFFFF),
+                            fontWeight: isLoginSelected
+                                ? FontWeight.w800
+                                : FontWeight.w500,
+                            letterSpacing: 0.5,
+                            fontSize: ResponsiveConfig.fontSize(14),
                           ),
+                          child: const Text('Iniciar Sesión'),
                         ),
                       ),
                     ),
@@ -76,14 +88,19 @@ class AuthTabRow extends StatelessWidget {
                       onTap: onRegisterClick,
                       behavior: HitTestBehavior.opaque,
                       child: Center(
-                        child: Text(
-                          'Registrarse',
+                        child: AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 200),
                           style: TextStyle(
                             color: !isLoginSelected
-                                ? AppColors.primary
-                                : AppColors.textSecondary,
-                            fontWeight: FontWeight.w600,
+                                ? Colors.white
+                                : const Color(0x99FFFFFF),
+                            fontWeight: !isLoginSelected
+                                ? FontWeight.w800
+                                : FontWeight.w500,
+                            letterSpacing: 0.5,
+                            fontSize: ResponsiveConfig.fontSize(14),
                           ),
+                          child: const Text('Registrarse'),
                         ),
                       ),
                     ),

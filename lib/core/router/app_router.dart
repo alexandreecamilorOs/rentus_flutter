@@ -23,8 +23,11 @@ import '../../presentation/screens/home/reports_screen.dart';
 import '../../presentation/screens/home/my_requests_screen.dart';
 import '../../presentation/screens/home/owner_requests_screen.dart';
 import '../../presentation/screens/home/settings_screen.dart';
+import '../../presentation/screens/splash/splash_screen.dart';
+import '../../presentation/screens/map/map_explorer_screen.dart';
 
 class AppRoutes {
+  static const splash = '/splash';
   static const login = '/login';
   static const register = '/register';
   static const verifyEmail = '/verify-email';
@@ -45,6 +48,7 @@ class AppRoutes {
   static const myRequests = '/my_requests';
   static const ownerRequests = '/owner_requests';
   static const about = '/about';
+  static const map = '/map';
 }
 
 class RouterRefreshListenable extends ChangeNotifier {
@@ -68,7 +72,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final listenable = ref.watch(routerRefreshListenableProvider);
 
   return GoRouter(
-    initialLocation: AppRoutes.login,
+    initialLocation: AppRoutes.splash,
     refreshListenable: listenable,
     redirect: (_, state) {
       final auth = ref.read(authProvider);
@@ -82,6 +86,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         AppRoutes.resetPassword,
       }.contains(location);
 
+      if (location == AppRoutes.splash) {
+        return null; // Let the splash screen handle its own rendering and delayed redirect
+      }
+
       if (!auth.isAuthenticated && !isAuthRoute) {
         return AppRoutes.login;
       }
@@ -94,6 +102,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(path: AppRoutes.splash, builder: (_, __) => const SplashScreen()),
       GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginScreen()),
       GoRoute(
           path: AppRoutes.register, builder: (_, __) => const RegisterScreen()),
@@ -148,6 +157,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
           path: AppRoutes.ownerRequests,
           builder: (_, __) => const OwnerRequestsScreen()),
+      GoRoute(
+        path: AppRoutes.map,
+        builder: (_, state) {
+          final lat = double.tryParse(state.uri.queryParameters['lat'] ?? '');
+          final lng = double.tryParse(state.uri.queryParameters['lng'] ?? '');
+          final id = int.tryParse(state.uri.queryParameters['id'] ?? '');
+          return MapExplorerScreen(
+            initialLat: lat,
+            initialLng: lng,
+            selectedId: id,
+          );
+        },
+      ),
       GoRoute(path: AppRoutes.about, builder: (_, __) => const AboutScreen()),
     ],
   );

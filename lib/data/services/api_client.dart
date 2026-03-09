@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../../core/constants/api_constants.dart';
 import 'api_exceptions.dart';
@@ -87,7 +88,12 @@ class ApiClient {
 
   Future<dynamic> get(String path,
       {Map<String, dynamic>? queryParameters}) async {
-    final response = await _dio.get(path, queryParameters: queryParameters);
+    final Map<String, dynamic> finalParams = Map.from(queryParameters ?? {});
+    if (kIsWeb) {
+      finalParams['_t'] = DateTime.now().millisecondsSinceEpoch.toString();
+    }
+
+    final response = await _dio.get(path, queryParameters: finalParams);
     return response.data;
   }
 

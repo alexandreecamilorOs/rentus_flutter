@@ -1,13 +1,13 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../../core/responsive_config.dart';
-import 'luxury_wave_overlay.dart';
 
 class HomeNavbar extends StatefulWidget {
   final String selectedTab;
   final VoidCallback? onNavigateHome;
   final VoidCallback? onNavigateProperties;
-  final VoidCallback? onNavigateAbout;
+  final VoidCallback? onNavigateMap;
   final VoidCallback? onNavigateProfile;
   final VoidCallback? onNavigateNotifications;
   final VoidCallback? onNavigateContracts;
@@ -23,7 +23,7 @@ class HomeNavbar extends StatefulWidget {
     this.selectedTab = 'Inicio',
     this.onNavigateHome,
     this.onNavigateProperties,
-    this.onNavigateAbout,
+    this.onNavigateMap,
     this.onNavigateProfile,
     this.onNavigateNotifications,
     this.onNavigateContracts,
@@ -40,353 +40,203 @@ class HomeNavbar extends StatefulWidget {
 }
 
 class _HomeNavbarState extends State<HomeNavbar> {
-  void _showMenu(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) {
-        final menuItems = [
-          {
-            'label': 'Mi Perfil',
-            'icon': Icons.person,
-            'action': widget.onNavigateProfile
-          },
-          {
-            'label': 'Notificaciones',
-            'icon': Icons.notifications,
-            'action': widget.onNavigateNotifications
-          },
-          {
-            'label': 'Contratos',
-            'icon': Icons.apartment,
-            'action': widget.onNavigateContracts
-          },
-          {
-            'label': 'Pagos',
-            'icon': Icons.payments,
-            'action': widget.onNavigatePayments
-          },
-          {
-            'label': 'Mantenimiento',
-            'icon': Icons.build,
-            'action': widget.onNavigateMaintenance
-          },
-          {
-            'label': 'Solicitudes (Dueño)',
-            'icon': Icons.description,
-            'action': widget.onNavigateRequests
-          },
-          {
-            'label': 'Mis Solicitudes',
-            'icon': Icons.sms,
-            'action': widget.onNavigateMyRequests
-          },
-          {
-            'label': 'Mis Reportes',
-            'icon': Icons.flag,
-            'action': widget.onNavigateMyReports
-          },
-          {
-            'label': 'Ajustes',
-            'icon': Icons.settings,
-            'action': widget.onNavigateSettings
-          },
-        ];
-
-        return Container(
-          margin: EdgeInsets.all(ResponsiveConfig.adaptiveSpacing(mobile: 12)),
-          padding:
-              ResponsiveConfig.adaptivePadding(horizontal: 18, vertical: 16),
-          decoration: BoxDecoration(
-            color: const Color(0xFFEDE8E2).withOpacity(0.82),
-            borderRadius: BorderRadius.circular(
-                ResponsiveConfig.getProportionateScreenWidth(24)),
-            border: Border.all(color: Colors.white.withOpacity(0.4)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Opciones',
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.4,
-                  fontSize: ResponsiveConfig.fontSize(20),
-                  color: const Color(0xFF2C3E50),
-                ),
-              ),
-              SizedBox(
-                  height: ResponsiveConfig.getProportionateScreenHeight(16)),
-              ...menuItems.map((item) => InkWell(
-                    onTap: () {
-                      Navigator.pop(context);
-                      (item['action'] as VoidCallback?)?.call();
-                    },
-                    borderRadius: BorderRadius.circular(
-                        ResponsiveConfig.getProportionateScreenWidth(14)),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical:
-                            ResponsiveConfig.getProportionateScreenHeight(10),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: ResponsiveConfig.getProportionateScreenWidth(
-                                36),
-                            height:
-                                ResponsiveConfig.getProportionateScreenWidth(
-                                    36),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF3E3D0),
-                              borderRadius: BorderRadius.circular(
-                                  ResponsiveConfig.getProportionateScreenWidth(
-                                      10)),
-                            ),
-                            child: Icon(
-                              item['icon'] as IconData,
-                              color: const Color(0xFF3B251D),
-                              size:
-                                  ResponsiveConfig.getProportionateScreenWidth(
-                                      20),
-                            ),
-                          ),
-                          SizedBox(
-                              width:
-                                  ResponsiveConfig.getProportionateScreenWidth(
-                                      12)),
-                          Expanded(
-                            child: Text(
-                              item['label'] as String,
-                              style: TextStyle(
-                                color: const Color(0xFF2C3E50),
-                                fontSize: ResponsiveConfig.fontSize(15),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )),
-            ],
-          ),
-        );
-      },
-    );
+  int get selectedIndex {
+    switch (widget.selectedTab) {
+      case 'Propiedades':
+        return 1;
+      case 'Mapa':
+        return 2;
+      case 'Inicio':
+      default:
+        return 0;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final navbarHeight = ResponsiveConfig.byBreakpoint<double>(
-      smallMobile: 80,
-      mobile: 86,
-      tablet: 96,
+      smallMobile: 70,
+      mobile: 76,
+      tablet: 86,
     );
 
-    return Container(
-      height: ResponsiveConfig.getProportionateScreenHeight(navbarHeight),
-      margin: EdgeInsets.symmetric(
-          horizontal: ResponsiveConfig.adaptiveSpacing(mobile: 8)),
-      padding: ResponsiveConfig.adaptivePadding(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(
-            ResponsiveConfig.getProportionateScreenWidth(24)),
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xCC3B251D), Color(0xD92E1D17)],
+    return SafeArea(
+      bottom: true,
+      child: Container(
+        height: ResponsiveConfig.getProportionateScreenHeight(navbarHeight),
+        margin: EdgeInsets.only(
+          left: ResponsiveConfig.adaptiveSpacing(mobile: 24),
+          right: ResponsiveConfig.adaptiveSpacing(mobile: 24),
+          bottom: ResponsiveConfig.getProportionateScreenHeight(16),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.22),
-            blurRadius: ResponsiveConfig.getProportionateScreenWidth(22),
-            offset: Offset(0, ResponsiveConfig.getProportionateScreenHeight(8)),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _MorphingNavItem(
-                  label: 'Inicio',
-                  icon: Icons.home,
-                  selected: widget.selectedTab == 'Inicio',
-                  onClick: widget.onNavigateHome,
-                ),
-                _MorphingNavItem(
-                  label: 'Propiedades',
-                  icon: Icons.apartment,
-                  selected: widget.selectedTab == 'Propiedades',
-                  onClick: widget.onNavigateProperties,
-                ),
-                _MorphingNavItem(
-                  label: 'Nosotros',
-                  icon: Icons.groups,
-                  selected: widget.selectedTab == 'Nosotros',
-                  onClick: widget.onNavigateAbout,
-                ),
-              ],
-            ),
-          ),
-          _WaveIconButton(
-            icon: Icons.menu,
-            onTap: () => _showMenu(context),
-            gradient: const [Color(0xFFDA9C5F), Color(0xFF8A5D34)],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MorphingNavItem extends StatefulWidget {
-  final String label;
-  final IconData icon;
-  final bool selected;
-  final VoidCallback? onClick;
-
-  const _MorphingNavItem({
-    required this.label,
-    required this.icon,
-    required this.selected,
-    this.onClick,
-  });
-
-  @override
-  State<_MorphingNavItem> createState() => _MorphingNavItemState();
-}
-
-class _MorphingNavItemState extends State<_MorphingNavItem> {
-  bool _isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final bubbleWidth = widget.selected ? 52.0 : 38.0;
-
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) {
-        setState(() => _isPressed = false);
-        widget.onClick?.call();
-      },
-      onTapCancel: () => setState(() => _isPressed = false),
-      child: AnimatedScale(
-        scale: _isPressed ? 0.93 : (widget.selected ? 1.08 : 1),
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOutBack,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _WaveIconButton(
-              icon: widget.icon,
-              selected: widget.selected,
-              width: bubbleWidth,
-              height: 34,
-              onTap: widget.onClick,
-              gradient: widget.selected
-                  ? const [Color(0x99DA9C5F), Color(0x663B251D)]
-                  : const [Colors.transparent, Colors.transparent],
-            ),
-            SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(2)),
-            AnimatedOpacity(
-              duration: const Duration(milliseconds: 200),
-              opacity: widget.selected ? 1 : 0,
-              child: Text(
-                widget.label,
-                style: TextStyle(
-                  color: const Color(0xFFFFE7C7),
-                  fontSize: ResponsiveConfig.fontSize(10),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(
+              ResponsiveConfig.getProportionateScreenWidth(40)),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFFD59A).withOpacity(0.15),
+              blurRadius: 30,
+              spreadRadius: -5,
+              offset: const Offset(0, 10),
             ),
           ],
         ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(
+              ResponsiveConfig.getProportionateScreenWidth(40)),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0x9915100E),
+                border: Border.all(color: const Color(0x33FFD59A), width: 1.5),
+                borderRadius: BorderRadius.circular(
+                    ResponsiveConfig.getProportionateScreenWidth(40)),
+              ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final totalWidth = constraints.maxWidth;
+                  final itemWidth = totalWidth / 3;
+
+                  return Stack(
+                    children: [
+                      // Sliding Indicator Capsule
+                      AnimatedPositioned(
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeOutBack,
+                        left: selectedIndex * itemWidth,
+                        top: 0,
+                        bottom: 0,
+                        width: itemWidth,
+                        child: Center(
+                          child: Container(
+                            width: itemWidth * 0.70,
+                            height:
+                                ResponsiveConfig.getProportionateScreenHeight(
+                                    48),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(30),
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFE5A95D), Color(0xFFC78133)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      const Color(0xFFE5A95D).withOpacity(0.4),
+                                  blurRadius: 15,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Icons & Text
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _AnimatedNavItem(
+                            label: 'Inicio',
+                            icon: Icons.home_rounded,
+                            isSelected: selectedIndex == 0,
+                            onTap: widget.onNavigateHome,
+                            width: itemWidth,
+                          ),
+                          _AnimatedNavItem(
+                            label: 'Explorar',
+                            icon: Icons.apartment_rounded,
+                            isSelected: selectedIndex == 1,
+                            onTap: widget.onNavigateProperties,
+                            width: itemWidth,
+                          ),
+                          _AnimatedNavItem(
+                            label: 'Mapa',
+                            icon: Icons.map_outlined,
+                            isSelected: selectedIndex == 2,
+                            onTap: widget.onNavigateMap,
+                            width: itemWidth,
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
 }
 
-class _WaveIconButton extends StatefulWidget {
+class _AnimatedNavItem extends StatelessWidget {
+  final String label;
   final IconData icon;
+  final bool isSelected;
   final VoidCallback? onTap;
-  final bool selected;
   final double width;
-  final double height;
-  final List<Color> gradient;
 
-  const _WaveIconButton({
+  const _AnimatedNavItem({
+    required this.label,
     required this.icon,
-    required this.gradient,
+    required this.isSelected,
     this.onTap,
-    this.selected = false,
-    this.width = 42,
-    this.height = 42,
+    required this.width,
   });
-
-  @override
-  State<_WaveIconButton> createState() => _WaveIconButtonState();
-}
-
-class _WaveIconButtonState extends State<_WaveIconButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1550),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: widget.onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 240),
-        width: ResponsiveConfig.getProportionateScreenWidth(widget.width),
-        height: ResponsiveConfig.getProportionateScreenHeight(widget.height),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(
-              ResponsiveConfig.getProportionateScreenWidth(18)),
-          gradient: LinearGradient(
-            colors: widget.gradient,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Stack(
-          alignment: Alignment.center,
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: width,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Positioned.fill(
-              child: LuxuryWaveOverlay(
-                animation: _controller,
-                color: const Color(0xFFFFD59A),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.easeOutBack,
+              transform: Matrix4.identity()
+                ..scale(isSelected ? 1.05 : 1.0)
+                ..translate(0.0, isSelected ? -4.0 : 0.0),
+              child: AnimatedTheme(
+                data: ThemeData(
+                    iconTheme: IconThemeData(
+                  color: isSelected
+                      ? Colors.white
+                      : const Color(0xFFFFD59A).withOpacity(0.35),
+                )),
+                child: Icon(
+                  icon,
+                  size: ResponsiveConfig.getProportionateScreenWidth(
+                      isSelected ? 26 : 24),
+                ),
               ),
             ),
-            Icon(
-              widget.icon,
-              color: widget.selected
-                  ? const Color(0xFFFFE7C7)
-                  : Colors.white.withOpacity(0.82),
-              size: ResponsiveConfig.getProportionateScreenWidth(
-                  widget.selected ? 24 : 22),
+            SizedBox(height: ResponsiveConfig.getProportionateScreenHeight(2)),
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 300),
+              opacity: isSelected ? 1.0 : 0.0,
+              child: AnimatedSlide(
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeOutQuint,
+                offset: isSelected ? Offset.zero : const Offset(0, 0.4),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: ResponsiveConfig.fontSize(10),
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
             ),
           ],
         ),

@@ -8,15 +8,32 @@ import '../../components/home_navbar.dart';
 import '../../components/animated_heading.dart';
 import '../../components/app_action_button.dart';
 import '../../components/modern_view_wrapper.dart';
+import '../../components/modern_header.dart';
+import '../../components/modern_drawer.dart';
+import '../../components/upward_particles.dart';
+import '../../components/map_mini_view.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isDrawerOpen = false;
+
+  @override
+  Widget build(BuildContext context) {
     final propertyAsync = ref.watch(propertyListProvider);
 
     return Scaffold(
+      key: _scaffoldKey,
+      onDrawerChanged: (isOpened) {
+        setState(() => _isDrawerOpen = isOpened);
+      },
+      drawer: const ModernDrawer(),
       backgroundColor: const Color(0xFF0D0A09),
       body: Stack(
         children: [
@@ -31,16 +48,23 @@ class HomeScreen extends ConsumerWidget {
             child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
-                // Top Padding
-                const SliverToBoxAdapter(
-                    child: SafeArea(child: SizedBox(height: 10))),
+                // Removed from here to make it persistent
+                // SliverToBoxAdapter(
+                //   child: ModernHeader(
+                //     isDrawerOpen: _isDrawerOpen,
+                //     onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                //   ),
+                // ),
+
+                // Top Padding (Adjusted for Header)
+                const SliverToBoxAdapter(child: SizedBox(height: 80)),
 
                 // 3. Hero Section Luxury
                 SliverToBoxAdapter(
                   child: _LuxuryHeroSection(
-                    propertyCount: propertyAsync.maybeWhen(
-                      data: (state) => state.items.length,
-                      orElse: () => 0,
+                    properties: propertyAsync.maybeWhen(
+                      data: (state) => state.items,
+                      orElse: () => [],
                     ),
                   ),
                 ),
@@ -162,7 +186,7 @@ class HomeScreen extends ConsumerWidget {
               selectedTab: "Inicio",
               onNavigateHome: () => context.go('/home'),
               onNavigateProperties: () => context.go('/properties'),
-              onNavigateAbout: () => context.go('/about'),
+              onNavigateMap: () => context.go('/map'),
               onNavigateProfile: () => context.go('/profile'),
               onNavigateNotifications: () => context.go('/notifications'),
               onNavigateContracts: () => context.go('/contracts'),
@@ -172,6 +196,16 @@ class HomeScreen extends ConsumerWidget {
               onNavigateRequests: () => context.go('/owner_requests'),
               onNavigateMyReports: () => context.go('/reports'),
               onNavigateSettings: () => context.go('/settings'),
+            ),
+          ),
+          // 3. Fixed Header
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: ModernHeader(
+              isDrawerOpen: _isDrawerOpen,
+              onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
             ),
           ),
         ],
@@ -203,7 +237,7 @@ class _UnifiedBackground extends StatelessWidget {
           ),
         ),
         // Cinematic upward particles
-        const _CinematicParticles(),
+        const UpwardParticles(),
 
         // Background Orbs for depth
         Positioned(
@@ -229,79 +263,11 @@ class _UnifiedBackground extends StatelessWidget {
   }
 }
 
-class _CinematicParticles extends StatefulWidget {
-  const _CinematicParticles();
-
-  @override
-  State<_CinematicParticles> createState() => _CinematicParticlesState();
-}
-
-class _CinematicParticlesState extends State<_CinematicParticles>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 15),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return CustomPaint(
-          painter: _ParticlesPainter(phase: _controller.value),
-          child: Container(),
-        );
-      },
-    );
-  }
-}
-
-class _ParticlesPainter extends CustomPainter {
-  final double phase;
-  _ParticlesPainter({required this.phase});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-    final paint = Paint()..style = PaintingStyle.fill;
-
-    for (int i = 0; i < 50; i++) {
-      double x = (i * 137) % w;
-      double yBase = ((i * 251) % h);
-      double y = (yBase - phase * h) % h;
-      if (y < 0) y += h;
-
-      paint.color =
-          i % 2 == 0 ? const Color(0x33DA9C5F) : Colors.white.withOpacity(0.08);
-
-      canvas.drawCircle(Offset(x, y), 1.0 + (i % 3), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _ParticlesPainter oldDelegate) =>
-      oldDelegate.phase != phase;
-}
-
 // --- Luxury Components ---
 
 class _LuxuryHeroSection extends StatelessWidget {
-  final int propertyCount;
-  const _LuxuryHeroSection({required this.propertyCount});
+  final List<Property> properties;
+  const _LuxuryHeroSection({required this.properties});
 
   @override
   Widget build(BuildContext context) {
@@ -367,7 +333,7 @@ class _LuxuryHeroSection extends StatelessWidget {
               children: [
                 _HeroStatItem(
                   icon: Icons.home_work_outlined,
-                  value: propertyCount > 0 ? "$propertyCount+" : "0",
+                  value: properties.length > 0 ? "${properties.length}+" : "0",
                   label: "Propiedades",
                 ),
                 const SizedBox(width: 12),
@@ -387,8 +353,36 @@ class _LuxuryHeroSection extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // Map Preview Card
-          const _MapPreviewCard(),
+          // Map Preview Card with Floating Decorations
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              MapMiniView(
+                properties: properties,
+                onTap: () => context.push('/map'),
+              ),
+              // Floating Card 1: Verified Properties
+              const Positioned(
+                top: -15,
+                left: -10,
+                child: _FloatingCard(
+                  icon: Icons.home_rounded,
+                  text: "Propiedades Verificadas",
+                  delay: 0,
+                ),
+              ),
+              // Floating Card 2: 5-Star Rating
+              const Positioned(
+                bottom: 25,
+                right: -10,
+                child: _FloatingCard(
+                  icon: Icons.star_rounded,
+                  text: "Calificación 5 Estrellas",
+                  delay: 1.5,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -439,97 +433,7 @@ class _HeroStatItem extends StatelessWidget {
   }
 }
 
-class _MapPreviewCard extends StatelessWidget {
-  const _MapPreviewCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 180,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        color: const Color(0xFF1A1A1A),
-        border: Border.all(color: const Color(0x26DA9C5F)),
-        image: const DecorationImage(
-          image: NetworkImage(
-              "https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=2074&auto=format&fit=crop"),
-          fit: BoxFit.cover,
-          opacity: 0.6,
-        ),
-      ),
-      child: Stack(
-        children: [
-          // Overlay
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
-              ),
-            ),
-          ),
-          // Live Badge
-          Positioned(
-            top: 16,
-            right: 16,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _LiveDot(),
-                  SizedBox(width: 6),
-                  Text(
-                    "En vivo",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // CTA Text
-          const Positioned(
-            bottom: 20,
-            left: 20,
-            child: Row(
-              children: [
-                Icon(Icons.location_on, color: Color(0xFFDA9C5F), size: 20),
-                SizedBox(width: 10),
-                Text(
-                  "Explorar en mapa",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Ripple click effect
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(24),
-              onTap: () {}, // Navigate to Map
-              child: const SizedBox.expand(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+// --- Removed _MapPreviewCard as it's replaced by MapMiniView ---
 
 class _LiveDot extends StatefulWidget {
   const _LiveDot();
@@ -708,7 +612,7 @@ class _LuxuryPropertyCard extends StatelessWidget {
                 SizedBox(
                   height: 220,
                   width: double.infinity,
-                  child: imageUrl != null
+                  child: imageUrl != null && imageUrl.isNotEmpty
                       ? Image.network(imageUrl,
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) =>
@@ -1000,6 +904,104 @@ class _LuxuryCtaSection extends StatelessWidget {
                   child: const Icon(Icons.phone, color: Colors.white),
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FloatingCard extends StatefulWidget {
+  final IconData icon;
+  final String text;
+  final double delay;
+
+  const _FloatingCard({
+    required this.icon,
+    required this.text,
+    this.delay = 0,
+  });
+
+  @override
+  State<_FloatingCard> createState() => _FloatingCardState();
+}
+
+class _FloatingCardState extends State<_FloatingCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 2500));
+
+    _animation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0, end: -12)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 50,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: -12, end: 0)
+            .chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 50,
+      ),
+    ]).animate(_controller);
+
+    Future.delayed(Duration(milliseconds: (widget.delay * 1000).toInt()), () {
+      if (mounted) _controller.repeat();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, _animation.value),
+          child: child,
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.95),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.3),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(widget.icon, color: const Color(0xFFDA9C5F), size: 18),
+            const SizedBox(width: 8),
+            Text(
+              widget.text,
+              style: const TextStyle(
+                color: Color(0xFF2C3E50),
+                fontWeight: FontWeight.w800,
+                fontSize: 11,
+                letterSpacing: 0.2,
+              ),
             ),
           ],
         ),

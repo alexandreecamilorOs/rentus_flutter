@@ -100,9 +100,7 @@ final myPropertiesProvider = FutureProvider<List<Property>>((ref) async {
   final authState = ref.watch(authProvider);
   if (authState.user == null) return [];
 
-  // Explicitly fetch properties for the logged in user
-  final response = await ref.read(propertyRepositoryProvider).getProperties(
-    queryParams: {'user_id': authState.user!.id},
-  );
-  return response.data;
+  // Explicitly fetch properties and filter by owner for literal parity
+  final response = await ref.read(propertyRepositoryProvider).getProperties();
+  return response.data.where((p) => p.userId == authState.user!.id).toList();
 });

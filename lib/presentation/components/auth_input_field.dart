@@ -63,57 +63,87 @@ class _AuthInputFieldState extends State<AuthInputField> {
   Widget build(BuildContext context) {
     final hasError = widget.error != null && widget.error!.isNotEmpty;
 
+    // Premium Dark Colors
     final containerColor = hasError
-        ? AppColors.error.withOpacity(0.08)
+        ? AppColors.error.withOpacity(0.15)
         : _isFocused
-            ? AppColors.white
-            : AppColors.inputBg;
+            ? const Color(0x26FFFFFF) // 15% White
+            : const Color(0x0DFFFFFF); // 5% White
 
     final borderColor = hasError
         ? AppColors.error
         : _isFocused
-            ? AppColors.primary
-            : AppColors.border;
+            ? const Color(0xFFFFD59A) // Majestic Gold
+            : const Color(0x33FFFFFF); // Subtle White Border
+
+    final iconAndLabelColor = hasError
+        ? AppColors.error
+        : _isFocused
+            ? const Color(0xFFFFD59A)
+            : const Color(0x99FFFFFF); // 60% White text
 
     return Padding(
       padding: EdgeInsets.symmetric(
-        vertical: ResponsiveConfig.getProportionateScreenHeight(8),
+        vertical: ResponsiveConfig.getProportionateScreenHeight(10),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.fastOutSlowIn,
+            duration: const Duration(milliseconds: 350),
+            curve: Curves.easeOutCubic,
             decoration: BoxDecoration(
               color: containerColor,
               borderRadius: BorderRadius.circular(
-                ResponsiveConfig.getProportionateScreenWidth(16),
+                ResponsiveConfig.getProportionateScreenWidth(18),
               ),
               border: Border.all(
                 color: borderColor,
-                width: _isFocused || hasError ? 2 : 1,
+                width: _isFocused ? 1.5 : 1,
               ),
+              boxShadow: _isFocused
+                  ? [
+                      BoxShadow(
+                        color: borderColor.withOpacity(0.25),
+                        blurRadius: 15,
+                        spreadRadius: 2,
+                      )
+                    ]
+                  : [],
             ),
             child: TextField(
               controller: _controller,
               focusNode: _focusNode,
               onChanged: widget.onValueChange,
               obscureText: widget.isPassword && !widget.isPasswordVisible,
-              style: const TextStyle(color: AppColors.textPrimary),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.5,
+              ),
+              cursorColor: const Color(0xFFFFD59A),
               decoration: InputDecoration(
+                filled: false,
                 labelText: widget.label,
                 labelStyle: TextStyle(
-                  color: hasError ? AppColors.error : AppColors.textSecondary,
+                  color: iconAndLabelColor,
+                  fontWeight: _isFocused ? FontWeight.w600 : FontWeight.w400,
                 ),
-                prefixIcon: Icon(widget.leadingIcon, color: AppColors.textSecondary),
+                prefixIcon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: Icon(
+                    widget.leadingIcon,
+                    key: ValueKey(_isFocused),
+                    color: iconAndLabelColor,
+                  ),
+                ),
                 suffixIcon: widget.isPassword
                     ? IconButton(
                         icon: Icon(
                           widget.isPasswordVisible
                               ? Icons.visibility_off
                               : Icons.visibility,
-                          color: AppColors.textSecondary,
+                          color: const Color(0x99FFFFFF),
                         ),
                         onPressed: widget.onTogglePasswordVisibility,
                       )
@@ -125,7 +155,7 @@ class _AuthInputFieldState extends State<AuthInputField> {
                 disabledBorder: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(
                   horizontal: ResponsiveConfig.getProportionateScreenWidth(16),
-                  vertical: ResponsiveConfig.getProportionateScreenHeight(16),
+                  vertical: ResponsiveConfig.getProportionateScreenHeight(18),
                 ),
               ),
             ),
@@ -133,7 +163,7 @@ class _AuthInputFieldState extends State<AuthInputField> {
           if (hasError)
             Padding(
               padding: EdgeInsets.only(
-                top: ResponsiveConfig.getProportionateScreenHeight(4),
+                top: ResponsiveConfig.getProportionateScreenHeight(6),
                 left: ResponsiveConfig.getProportionateScreenWidth(16),
               ),
               child: Text(
@@ -141,6 +171,7 @@ class _AuthInputFieldState extends State<AuthInputField> {
                 style: TextStyle(
                   color: AppColors.error,
                   fontSize: ResponsiveConfig.fontSize(12),
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),

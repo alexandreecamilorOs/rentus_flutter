@@ -97,9 +97,13 @@ class AuthRepository {
   Future<User> getMe(String accessToken) async {
     final response = await _dio.get('/auth/me',
         options: Options(headers: {'Authorization': 'Bearer $accessToken'}));
-    final map =
-        (response.data['data'] ?? response.data) as Map<String, dynamic>;
-    return User.fromJson(map);
+    final body = response.data;
+
+    // According to Vue service, user might be in body['data']['user'] or body['user']
+    final userMap = (body['user'] ?? body['data']?['user'] ?? body['data'])
+            as Map<String, dynamic>? ??
+        <String, dynamic>{};
+    return User.fromJson(userMap);
   }
 
   Future<String?> refreshToken() async {

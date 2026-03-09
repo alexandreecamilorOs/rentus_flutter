@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/responsive_config.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/providers/auth_provider.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../components/auth_background.dart';
 import '../../components/auth_button.dart';
 import '../../components/auth_input_field.dart';
@@ -44,8 +43,39 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       _password.isNotEmpty &&
       _acceptTerms;
 
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
   Future<void> _onRegisterClick() async {
-    print('UI: Register button clicked. Email: $_email');
+    final emailTrimmed = _email.trim();
+    if (emailTrimmed.isEmpty ||
+        _name.isEmpty ||
+        _phone.isEmpty ||
+        _idDocument.isEmpty ||
+        _address.isEmpty ||
+        _password.isEmpty) {
+      setState(() => _errorMessage = 'Por favor, completa todos los campos.');
+      return;
+    }
+
+    if (!_isValidEmail(emailTrimmed)) {
+      setState(() => _errorMessage = 'Por favor, ingresa un email válido.');
+      return;
+    }
+
+    if (_password.length < 6) {
+      setState(() =>
+          _errorMessage = 'La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    if (!_acceptTerms) {
+      setState(
+          () => _errorMessage = 'Debes aceptar los términos y condiciones.');
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -54,7 +84,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final ok = await ref.read(authProvider.notifier).register(
           RegisterData(
             name: _name.trim(),
-            email: _email.trim(),
+            email: emailTrimmed,
             phone: _phone.trim(),
             idDocument: _idDocument.trim(),
             address: _address.trim(),
@@ -71,14 +101,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       return;
     }
 
-    final message =
-        ref.read(authProvider).message ?? 'No fue posible registrar la cuenta.';
-    setState(() {
-      _errorMessage = message.contains('connection error') ||
-              message.contains('XMLHttpRequest')
-          ? 'No se pudo conectar con el servidor. Verifica internet/CORS del backend.'
-          : message;
-    });
+    setState(() => _errorMessage = ref.read(authProvider).message);
   }
 
   @override
@@ -125,13 +148,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 child: Row(
                                   children: [
                                     const Icon(Icons.arrow_back,
-                                        color: AppColors.textSecondary),
+                                        color: Color(0x99FFFFFF)),
                                     SizedBox(
                                         width: ResponsiveConfig
                                             .getProportionateScreenWidth(8)),
                                     const Text('Volver',
                                         style: TextStyle(
-                                            color: AppColors.textSecondary)),
+                                            color: Color(0x99FFFFFF),
+                                            fontWeight: FontWeight.w500)),
                                   ],
                                 ),
                               ),
@@ -150,8 +174,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 'Crea tu cuenta',
                                 style: TextStyle(
                                   fontSize: ResponsiveConfig.fontSize(24),
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                  letterSpacing: 0.5,
                                 ),
                               ),
                               SizedBox(
@@ -160,8 +185,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               Text(
                                 'Completa tus datos para comenzar',
                                 style: TextStyle(
-                                  color: AppColors.textSecondary,
+                                  color: const Color(0x99FFFFFF),
                                   fontSize: ResponsiveConfig.fontSize(14),
+                                  fontWeight: FontWeight.w400,
                                 ),
                               ),
                               SizedBox(
@@ -172,42 +198,42 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 onValueChange: (val) =>
                                     setState(() => _name = val),
                                 label: 'Nombre completo',
-                                leadingIcon: Icons.person,
+                                leadingIcon: Icons.person_rounded,
                               ),
                               AuthInputField(
                                 value: _email,
                                 onValueChange: (val) =>
                                     setState(() => _email = val),
                                 label: 'Email',
-                                leadingIcon: Icons.email,
+                                leadingIcon: Icons.email_rounded,
                               ),
                               AuthInputField(
                                 value: _phone,
                                 onValueChange: (val) =>
                                     setState(() => _phone = val),
                                 label: 'Teléfono',
-                                leadingIcon: Icons.phone,
+                                leadingIcon: Icons.phone_rounded,
                               ),
                               AuthInputField(
                                 value: _idDocument,
                                 onValueChange: (val) =>
                                     setState(() => _idDocument = val),
                                 label: 'Documento de identidad',
-                                leadingIcon: Icons.badge,
+                                leadingIcon: Icons.badge_rounded,
                               ),
                               AuthInputField(
                                 value: _address,
                                 onValueChange: (val) =>
                                     setState(() => _address = val),
                                 label: 'Dirección',
-                                leadingIcon: Icons.location_on,
+                                leadingIcon: Icons.location_on_rounded,
                               ),
                               AuthInputField(
                                 value: _password,
                                 onValueChange: (val) =>
                                     setState(() => _password = val),
                                 label: 'Contraseña',
-                                leadingIcon: Icons.lock,
+                                leadingIcon: Icons.lock_rounded,
                                 isPassword: true,
                                 isPasswordVisible: _isPasswordVisible,
                                 onTogglePasswordVisibility: () {
@@ -221,7 +247,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                     value: _acceptTerms,
                                     onChanged: (val) => setState(
                                         () => _acceptTerms = val ?? false),
-                                    activeColor: AppColors.primary,
+                                    activeColor: const Color(0xFFFFD59A),
+                                    checkColor: const Color(0xFF15100E),
+                                    side: const BorderSide(
+                                        color: Color(0x66FFFFFF), width: 1.5),
                                   ),
                                   Expanded(
                                     child: GestureDetector(
@@ -230,7 +259,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                         text: TextSpan(
                                           text: 'Acepto los ',
                                           style: TextStyle(
-                                            color: AppColors.textPrimary,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w500,
                                             fontSize:
                                                 ResponsiveConfig.fontSize(14),
                                           ),
@@ -238,8 +268,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                             TextSpan(
                                               text: 'términos y condiciones',
                                               style: TextStyle(
-                                                color: AppColors.primary,
-                                                fontWeight: FontWeight.w600,
+                                                color: Color(0xFFFFD59A),
+                                                fontWeight: FontWeight.w700,
                                               ),
                                             ),
                                           ],
@@ -249,18 +279,37 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   ),
                                 ],
                               ),
-                              if (_errorMessage != null)
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: ResponsiveConfig
-                                        .getProportionateScreenHeight(8),
+                              if (_errorMessage != null) ...[
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                        color: Colors.red.withOpacity(0.3)),
                                   ),
-                                  child: Text(
-                                    _errorMessage!,
-                                    style:
-                                        const TextStyle(color: AppColors.error),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.error_outline,
+                                          color: Color(0xFFFF6B6B), size: 20),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          _errorMessage!,
+                                          style: const TextStyle(
+                                              color: Color(0xFFFF6B6B),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
+                                SizedBox(
+                                    height: ResponsiveConfig
+                                        .getProportionateScreenHeight(16)),
+                              ],
                               SizedBox(
                                   height: ResponsiveConfig
                                       .getProportionateScreenHeight(8)),
@@ -291,15 +340,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                     text: TextSpan(
                                       text: '¿Ya tienes una cuenta? ',
                                       style: TextStyle(
-                                        color: AppColors.textSecondary,
+                                        color: const Color(0x99FFFFFF),
                                         fontSize: ResponsiveConfig.fontSize(14),
                                       ),
                                       children: const [
                                         TextSpan(
                                           text: 'Inicia sesión aquí',
                                           style: TextStyle(
-                                            color: AppColors.primary,
-                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFFFFD59A),
+                                            fontWeight: FontWeight.w700,
                                           ),
                                         ),
                                       ],

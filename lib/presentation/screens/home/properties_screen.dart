@@ -6,6 +6,9 @@ import '../../../data/providers/entity_providers.dart';
 import '../../../data/models/property_model.dart';
 import '../../components/app_action_button.dart';
 import '../../components/home_navbar.dart';
+import '../../components/modern_header.dart';
+import '../../components/modern_drawer.dart';
+import '../../components/upward_particles.dart';
 
 class PropertiesScreen extends ConsumerStatefulWidget {
   const PropertiesScreen({super.key});
@@ -15,6 +18,8 @@ class PropertiesScreen extends ConsumerStatefulWidget {
 }
 
 class _PropertiesScreenState extends ConsumerState<PropertiesScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isDrawerOpen = false;
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   String _selectedType = 'Todos';
@@ -44,6 +49,9 @@ class _PropertiesScreenState extends ConsumerState<PropertiesScreen> {
     final propertiesAsync = ref.watch(propertyListProvider);
 
     return Scaffold(
+      key: _scaffoldKey,
+      onDrawerChanged: (isOpened) => setState(() => _isDrawerOpen = isOpened),
+      drawer: const ModernDrawer(),
       backgroundColor: const Color(0xFF0D0A09),
       body: Stack(
         children: [
@@ -56,7 +64,8 @@ class _PropertiesScreenState extends ConsumerState<PropertiesScreen> {
               controller: _scrollController,
               physics: const BouncingScrollPhysics(),
               slivers: [
-                // Header & Search
+                // Top Padding (Adjusted for Header)
+                const SliverToBoxAdapter(child: SizedBox(height: 80)),
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.all(24.0),
@@ -179,7 +188,7 @@ class _PropertiesScreenState extends ConsumerState<PropertiesScreen> {
               selectedTab: "Propiedades",
               onNavigateHome: () => context.go('/home'),
               onNavigateProperties: () => context.go('/properties'),
-              onNavigateAbout: () => context.go('/about'),
+              onNavigateMap: () => context.go('/map'),
               onNavigateProfile: () => context.go('/profile'),
               onNavigateNotifications: () => context.go('/notifications'),
               onNavigateContracts: () => context.go('/contracts'),
@@ -191,6 +200,16 @@ class _PropertiesScreenState extends ConsumerState<PropertiesScreen> {
               onNavigateSettings: () => context.go('/settings'),
             ),
           ),
+          // 4. Fixed Header
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: ModernHeader(
+              isDrawerOpen: _isDrawerOpen,
+              onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
+            ),
+          ),
         ],
       ),
     );
@@ -199,20 +218,26 @@ class _PropertiesScreenState extends ConsumerState<PropertiesScreen> {
 
 class _CinematicBackground extends StatelessWidget {
   const _CinematicBackground();
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF0D0A09),
-            Color(0xFF1E1410),
-            Color(0xFF2E1D17),
-          ],
+    return Stack(
+      children: [
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF0D0A09),
+                Color(0xFF1E1410),
+                Color(0xFF2E1D17),
+              ],
+            ),
+          ),
         ),
-      ),
+        const UpwardParticles(),
+      ],
     );
   }
 }

@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/responsive_config.dart';
 import '../../../data/providers/auth_provider.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../components/auth_background.dart';
 import '../../components/auth_button.dart';
 import '../../components/auth_input_field.dart';
@@ -32,15 +31,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   bool get _isFormValid => _email.isNotEmpty && _password.isNotEmpty;
 
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
   Future<void> _onLoginClick() async {
-    print('UI: Login button clicked. Email: $_email');
+    final emailTrimmed = _email.trim();
+    if (emailTrimmed.isEmpty || _password.isEmpty) {
+      setState(() => _errorMessage = 'Por favor, completa todos los campos.');
+      return;
+    }
+
+    if (!_isValidEmail(emailTrimmed)) {
+      setState(() => _errorMessage = 'Por favor, ingresa un email válido.');
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     final ok = await ref.read(authProvider.notifier).login(
-          _email.trim(),
+          emailTrimmed,
           _password,
           remember: _rememberMe,
         );
@@ -60,13 +73,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return;
     }
 
-    final message = authState.message ?? 'No fue posible iniciar sesión.';
-    setState(() {
-      _errorMessage = message.contains('connection error') ||
-              message.contains('XMLHttpRequest')
-          ? 'No se pudo conectar con el servidor. Verifica internet/CORS del backend.'
-          : message;
-    });
+    setState(() => _errorMessage = authState.message);
   }
 
   @override
@@ -83,8 +90,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               Center(
                 child: SingleChildScrollView(
-                  padding: ResponsiveConfig.adaptivePadding(
-                      horizontal: 16, vertical: 16),
+                  padding: EdgeInsets.only(
+                    top: ResponsiveConfig.getProportionateScreenHeight(120),
+                    bottom: ResponsiveConfig.getProportionateScreenHeight(24),
+                    left: ResponsiveConfig.adaptiveSpacing(mobile: 16),
+                    right: ResponsiveConfig.adaptiveSpacing(mobile: 16),
+                  ),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final width = ResponsiveConfig.byBreakpoint<double>(
@@ -113,13 +124,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 child: Row(
                                   children: [
                                     const Icon(Icons.arrow_back,
-                                        color: AppColors.textSecondary),
+                                        color: Color(0x99FFFFFF)),
                                     SizedBox(
                                         width: ResponsiveConfig
                                             .getProportionateScreenWidth(8)),
                                     const Text('Volver',
                                         style: TextStyle(
-                                            color: AppColors.textSecondary)),
+                                            color: Color(0x99FFFFFF),
+                                            fontWeight: FontWeight.w500)),
                                   ],
                                 ),
                               ),
@@ -138,8 +150,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 'Accede a tu cuenta',
                                 style: TextStyle(
                                   fontSize: ResponsiveConfig.fontSize(24),
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                  letterSpacing: 0.5,
                                 ),
                               ),
                               SizedBox(
@@ -148,8 +161,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               Text(
                                 'Ingresa tus credenciales para continuar',
                                 style: TextStyle(
-                                  color: AppColors.textSecondary,
+                                  color: const Color(0x99FFFFFF),
                                   fontSize: ResponsiveConfig.fontSize(14),
+                                  fontWeight: FontWeight.w400,
                                 ),
                               ),
                               SizedBox(
@@ -160,14 +174,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 onValueChange: (val) =>
                                     setState(() => _email = val),
                                 label: 'Email',
-                                leadingIcon: Icons.email,
+                                leadingIcon: Icons.email_rounded,
                               ),
                               AuthInputField(
                                 value: _password,
                                 onValueChange: (val) =>
                                     setState(() => _password = val),
                                 label: 'Contraseña',
-                                leadingIcon: Icons.lock,
+                                leadingIcon: Icons.lock_rounded,
                                 isPassword: true,
                                 isPasswordVisible: _isPasswordVisible,
                                 onTogglePasswordVisibility: () {
@@ -181,36 +195,60 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     value: _rememberMe,
                                     onChanged: (val) => setState(
                                         () => _rememberMe = val ?? false),
-                                    activeColor: AppColors.primary,
+                                    activeColor: const Color(0xFFFFD59A),
+                                    checkColor: const Color(0xFF15100E),
+                                    side: const BorderSide(
+                                        color: Color(0x66FFFFFF), width: 1.5),
                                   ),
                                   const Text('Recordarme',
                                       style: TextStyle(
-                                          color: AppColors.textPrimary)),
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w500)),
                                   const Spacer(),
                                   GestureDetector(
                                     onTap: () => context.go('/forgot-password'),
                                     child: Text(
                                       '¿Olvidaste tu contraseña?',
                                       style: TextStyle(
-                                        color: AppColors.primary,
+                                        color: const Color(0xFFFFD59A),
                                         fontSize: ResponsiveConfig.fontSize(12),
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
-                              if (_errorMessage != null)
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: ResponsiveConfig
-                                        .getProportionateScreenHeight(8),
+                              if (_errorMessage != null) ...[
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                        color: Colors.red.withOpacity(0.3)),
                                   ),
-                                  child: Text(
-                                    _errorMessage!,
-                                    style:
-                                        const TextStyle(color: AppColors.error),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.error_outline,
+                                          color: Color(0xFFFF6B6B), size: 20),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          _errorMessage!,
+                                          style: const TextStyle(
+                                              color: Color(0xFFFF6B6B),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
+                                SizedBox(
+                                    height: ResponsiveConfig
+                                        .getProportionateScreenHeight(16)),
+                              ],
                               SizedBox(
                                   height: ResponsiveConfig
                                       .getProportionateScreenHeight(8)),
@@ -241,15 +279,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     text: TextSpan(
                                       text: '¿No tienes una cuenta? ',
                                       style: TextStyle(
-                                        color: AppColors.textSecondary,
+                                        color: const Color(0x99FFFFFF),
                                         fontSize: ResponsiveConfig.fontSize(14),
                                       ),
                                       children: const [
                                         TextSpan(
                                           text: 'Regístrate gratis',
                                           style: TextStyle(
-                                            color: AppColors.primary,
-                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFFFFD59A),
+                                            fontWeight: FontWeight.w700,
                                           ),
                                         ),
                                       ],

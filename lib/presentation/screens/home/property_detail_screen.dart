@@ -7,6 +7,8 @@ import '../../../data/providers/entity_providers.dart';
 import '../../../data/models/property_model.dart';
 import '../../components/app_action_button.dart';
 import '../../../data/providers/auth_provider.dart';
+import '../../components/map_mini_view.dart';
+import 'package:latlong2/latlong.dart';
 
 class PropertyDetailScreen extends ConsumerStatefulWidget {
   final int propertyId;
@@ -694,22 +696,18 @@ class _MapSection extends StatelessWidget {
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1)),
         const SizedBox(height: 16),
-        Container(
-          height: 200,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
-            color: Colors.black26,
-            image: const DecorationImage(
-              image: NetworkImage(
-                  "https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1000&auto=format&fit=crop"),
-              fit: BoxFit.cover,
-              opacity: 0.4,
-            ),
-          ),
-          child: const Center(
-            child: Icon(Icons.location_on, color: Color(0xFFDA9C5F), size: 40),
-          ),
+        MapMiniView(
+          properties: [property],
+          initialCenter: (property.lat != null && property.lng != null)
+              ? LatLng(property.lat!, property.lng!)
+              : null,
+          initialZoom: 15.0,
+          label: "Ver ubicación exacta",
+          onTap: () {
+            final lat = property.lat;
+            final lng = property.lng;
+            context.push('/map?lat=$lat&lng=$lng&id=${property.id}');
+          },
         ),
       ],
     );

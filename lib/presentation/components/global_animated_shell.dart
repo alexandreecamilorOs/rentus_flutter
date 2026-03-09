@@ -52,6 +52,8 @@ class _GlobalAnimatedShellState extends State<GlobalAnimatedShell>
                     ? 720.0
                     : width;
 
+        final isProfile = widget.child.toString().contains('ProfileScreen');
+
         return AnimatedBuilder(
           animation: _controller,
           builder: (context, _) {
@@ -87,29 +89,32 @@ class _GlobalAnimatedShellState extends State<GlobalAnimatedShell>
                     alignment: Alignment.topCenter,
                     child: ConstrainedBox(
                       constraints: BoxConstraints(maxWidth: maxContentWidth),
-                      child: TweenAnimationBuilder<double>(
-                        duration: const Duration(milliseconds: 420),
-                        tween: Tween(begin: 0.985, end: 1.0),
-                        curve: Curves.easeOutCubic,
-                        builder: (context, scale, child) => Transform.scale(
-                          scale: scale,
-                          child: child,
-                        ),
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 380),
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.easeInCubic,
-                          child: KeyedSubtree(
-                            key: ValueKey<String>(
-                                widget.child.runtimeType.toString()),
-                            child: ClipRRect(
-                              borderRadius:
-                                  BorderRadius.circular(isTablet ? 22 : 0),
-                              child: widget.child,
+                      child: isProfile
+                          ? widget.child
+                          : TweenAnimationBuilder<double>(
+                              duration: const Duration(milliseconds: 420),
+                              tween: Tween(begin: 0.985, end: 1.0),
+                              curve: Curves.easeOutCubic,
+                              builder: (context, scale, child) =>
+                                  Transform.scale(
+                                scale: scale,
+                                child: child,
+                              ),
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 380),
+                                switchInCurve: Curves.easeOutCubic,
+                                switchOutCurve: Curves.easeInCubic,
+                                child: KeyedSubtree(
+                                  key: ValueKey<String>(
+                                      widget.child.runtimeType.toString()),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(
+                                        isTablet ? 22 : 0),
+                                    child: widget.child,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
                     ),
                   ),
                 ),

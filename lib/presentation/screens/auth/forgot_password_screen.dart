@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/responsive_config.dart';
 import '../../../data/providers/auth_provider.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../components/auth_background.dart';
 import '../../components/auth_button.dart';
 import '../../components/auth_input_field.dart';
@@ -27,7 +26,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   Future<void> _onSubmit() async {
     final email = _emailController.text.trim();
     if (email.isEmpty) {
-      setState(() => _errorMessage = 'Ingresa tu correo electrónico.');
+      setState(
+          () => _errorMessage = 'Por favor, ingresa tu correo electrónico.');
       return;
     }
 
@@ -44,7 +44,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     if (ok) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Código de recuperación enviado. Revisa tu correo.')),
+            backgroundColor: Color(0xFF15100E),
+            content: Text('Código de recuperación enviado. Revisa tu correo.',
+                style: TextStyle(color: Colors.white))),
       );
       context.push('/reset-password', extra: email);
     } else {
@@ -84,59 +86,109 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          IconButton(
-                            onPressed: () => context.pop(),
-                            icon: const Icon(Icons.arrow_back),
-                            padding: EdgeInsets.zero,
-                            alignment: Alignment.centerLeft,
+                          GestureDetector(
+                            onTap: () {
+                              if (context.canPop()) {
+                                context.pop();
+                              } else {
+                                context.go('/login');
+                              }
+                            },
+                            child: Row(
+                              children: [
+                                const Icon(Icons.arrow_back,
+                                    color: Color(0x99FFFFFF)),
+                                SizedBox(
+                                    width: ResponsiveConfig
+                                        .getProportionateScreenWidth(8)),
+                                const Text('Volver',
+                                    style: TextStyle(
+                                        color: Color(0x99FFFFFF),
+                                        fontWeight: FontWeight.w500)),
+                              ],
+                            ),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(
+                              height:
+                                  ResponsiveConfig.getProportionateScreenHeight(
+                                      24)),
                           const Text(
                             'Recuperar Contraseña',
                             style: TextStyle(
-                              fontSize: 28,
+                              fontSize: 26,
                               fontWeight: FontWeight.w800,
-                              color: AppColors.textPrimary,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(
+                              height:
+                                  ResponsiveConfig.getProportionateScreenHeight(
+                                      6)),
                           const Text(
                             'Ingresa tu correo y te enviaremos un código para restablecer tu contraseña.',
                             style: TextStyle(
-                              fontSize: 15,
-                              color: AppColors.textSecondary,
+                              fontSize: 14,
+                              color: Color(0x99FFFFFF),
+                              fontWeight: FontWeight.w400,
+                              height: 1.4,
                             ),
                           ),
-                          const SizedBox(height: 32),
+                          SizedBox(
+                              height:
+                                  ResponsiveConfig.getProportionateScreenHeight(
+                                      32)),
                           if (_errorMessage != null) ...[
                             Container(
-                              padding: const EdgeInsets.all(12),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
                               decoration: BoxDecoration(
-                                color: Colors.red.shade50,
+                                color: Colors.red.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.red.shade200),
+                                border: Border.all(
+                                    color: Colors.red.withOpacity(0.3)),
                               ),
-                              child: Text(
-                                _errorMessage!,
-                                style: TextStyle(
-                                    color: Colors.red.shade700, fontSize: 14),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.error_outline,
+                                      color: Color(0xFFFF6B6B), size: 20),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      _errorMessage!,
+                                      style: const TextStyle(
+                                          color: Color(0xFFFF6B6B),
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 20),
+                            SizedBox(
+                                height: ResponsiveConfig
+                                    .getProportionateScreenHeight(24)),
                           ],
                           AuthInputField(
                             label: 'Correo Electrónico',
                             value: _emailController.text,
                             onValueChange: (v) =>
                                 setState(() => _emailController.text = v),
-                            leadingIcon: Icons.email_outlined,
+                            leadingIcon: Icons.email_rounded,
                           ),
-                          const SizedBox(height: 32),
+                          SizedBox(
+                              height:
+                                  ResponsiveConfig.getProportionateScreenHeight(
+                                      32)),
                           AuthButton(
                             text: 'Enviar Código',
                             onClick: _onSubmit,
                             isLoading: _isLoading,
                           ),
+                          SizedBox(
+                              height:
+                                  ResponsiveConfig.getProportionateScreenHeight(
+                                      8)),
                         ],
                       ),
                     ),

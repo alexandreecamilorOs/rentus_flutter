@@ -297,7 +297,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               selectedTab: "Settings",
               onNavigateHome: () => context.go('/home'),
               onNavigateProperties: () => context.go('/properties'),
-              onNavigateAbout: () => context.go('/about'),
+              onNavigateMap: () => context.go('/map'),
               onNavigateProfile: () => context.go('/profile'),
               onNavigateNotifications: () => context.go('/notifications'),
               onNavigateContracts: () => context.go('/contracts'),

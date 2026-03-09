@@ -49,14 +49,52 @@ class AuthState {
 }
 
 String _friendlyError(Object e) {
-  if (e is DioException && e.type == DioExceptionType.connectionError) {
-    return 'No se pudo conectar con el servidor. Verifica internet/CORS del backend.';
+  if (e is DioException) {
+    if (e.type == DioExceptionType.connectionError ||
+        e.type == DioExceptionType.connectionTimeout) {
+      return 'No se pudo conectar con el servidor. Verifica tu conexión a internet.';
+    }
+
+    final response = e.response;
+    if (response != null) {
+      final statusCode = response.statusCode;
+      final data = response.data;
+
+      // Map common status codes to friendly messages
+      switch (statusCode) {
+        case 400:
+          return 'Solicitud inválida. Revisa los datos ingresados.';
+        case 401:
+          return 'Credenciales incorrectas. Verifica tu correo o contraseña.';
+        case 403:
+          if (data is Map && data['data']?['verification_required'] == true) {
+            return 'Email no verificado.';
+          }
+          return 'No tienes permiso para realizar esta acción.';
+        case 404:
+          return 'El recurso solicitado no fue encontrado.';
+        case 422:
+          // Often used for validation errors (e.g., email already taken)
+          if (data is Map && data['message'] != null) {
+            final msg = data['message'].toString();
+            if (msg.contains('already taken') || msg.contains('existe')) {
+              return 'Este correo ya está registrado.';
+            }
+            return msg;
+          }
+          return 'Error de validación. Revisa los campos.';
+        case 500:
+          return 'Error interno del servidor. Inténtalo más tarde.';
+      }
+    }
   }
+
   final msg = e.toString();
   if (msg.contains('XMLHttpRequest') || msg.contains('connection error')) {
-    return 'No se pudo conectar con el servidor. Verifica internet/CORS del backend.';
+    return 'Error de conexión. Verifica el servidor.';
   }
-  return msg;
+
+  return 'Ocurrió un error inesperado. Inténtalo de nuevo.';
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {
@@ -215,6 +253,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _repository.logout();
     state = state.copyWith(
         status: AuthStatus.unauthenticated, user: null, clearPending: true);
+  }
+
+  Future<void> refreshUserProfile() async {
+    try {
+      final user = await _repository.tryRestoreSession();
+      if (user != null) {
+        state = state.copyWith(user: user);
+      }
+    } catch (e) {
+      print('AUTH ERROR (refreshUserProfile): $e');
+    }
   }
 }
 

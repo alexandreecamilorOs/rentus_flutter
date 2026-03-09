@@ -1,18 +1,31 @@
+import '../../core/constants/api_constants.dart';
+
 class PropertyImage {
   final int id;
   final String url;
 
   PropertyImage({required this.id, required this.url});
 
-  factory PropertyImage.fromJson(Map<String, dynamic> json) {
-    final rawId = json['id'];
-    final id =
-        rawId is int ? rawId : (rawId is String ? int.tryParse(rawId) : null);
+  factory PropertyImage.fromJson(dynamic json) {
+    if (json is String) {
+      return PropertyImage(id: 0, url: json);
+    }
+    if (json is Map<String, dynamic>) {
+      final rawId = json['id'];
+      final id =
+          rawId is int ? rawId : (rawId is String ? int.tryParse(rawId) : null);
 
-    return PropertyImage(
-      id: id ?? 0,
-      url: json['url'] ?? json['image_url'] ?? '',
-    );
+      return PropertyImage(
+        id: id ?? 0,
+        url: ApiConstants.resolveUrl(json['url'] ??
+            json['image_url'] ??
+            json['path'] ??
+            json['file'] ??
+            json['secure_url'] ??
+            ''),
+      );
+    }
+    return PropertyImage(id: 0, url: '');
   }
 
   Map<String, dynamic> toJson() => {'id': id, 'url': url};
@@ -34,6 +47,8 @@ class Property {
   final int? numBedrooms;
   final int? numBathrooms;
   final double? area;
+  final double? lat;
+  final double? lng;
   final List<PropertyImage> propertyImages;
 
   Property({
@@ -52,16 +67,40 @@ class Property {
     this.numBedrooms,
     this.numBathrooms,
     this.area,
+    this.lat,
+    this.lng,
     this.propertyImages = const [],
   });
 
+  String get mainImage =>
+      propertyImages.isNotEmpty ? propertyImages.first.url : '';
+
   factory Property.fromJson(Map<String, dynamic> json) {
-    final imagesRaw = (json['property_images'] as List?) ?? [];
-    final images = imagesRaw
-        .map((e) => PropertyImage.fromJson(e as Map<String, dynamic>))
-        .toList();
-    final fallback = json['image_url'];
-    if (images.isEmpty && fallback is String && fallback.isNotEmpty) {
+    final imagesRaw = (json['property_images'] as List?) ??
+        (json['images'] as List?) ??
+        (json['propertyImages'] as List?) ??
+        [];
+    final images = imagesRaw.map((e) => PropertyImage.fromJson(e)).toList();
+    String findFirstString(Map<String, dynamic> json, List<String> keys) {
+      for (final key in keys) {
+        final val = json[key];
+        if (val is String && val.isNotEmpty) return val;
+        if (val is List && val.isNotEmpty && val.first is String) {
+          final firstStr = val.first as String;
+          if (firstStr.isNotEmpty) return firstStr;
+        }
+      }
+      return '';
+    }
+
+    final fallbackPath = findFirstString(json, [
+      'image_url',
+      'main_image',
+      'image',
+      'featured_image',
+    ]);
+    final fallback = ApiConstants.resolveUrl(fallbackPath);
+    if (images.isEmpty && fallback.isNotEmpty) {
       images.add(PropertyImage(id: 0, url: fallback));
     }
 
@@ -95,6 +134,8 @@ class Property {
       numBedrooms: parseInt(json['num_bedrooms']),
       numBathrooms: parseInt(json['num_bathrooms']),
       area: parseDouble(json['area']),
+      lat: parseDouble(json['lat']),
+      lng: parseDouble(json['lng']),
       propertyImages: images,
     );
   }
@@ -115,6 +156,8 @@ class Property {
         'num_bedrooms': numBedrooms,
         'num_bathrooms': numBathrooms,
         'area': area,
+        'lat': lat,
+        'lng': lng,
         'property_images': propertyImages.map((e) => e.toJson()).toList(),
       };
 }

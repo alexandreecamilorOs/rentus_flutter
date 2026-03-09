@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
-import '../animations/animated_background.dart';
+import 'upward_particles.dart';
 
 class AuthBackground extends StatelessWidget {
   final Widget child;
@@ -9,18 +8,28 @@ class AuthBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBackground(
-      colors: const [
-        AppColors.background,
-        AppColors.accent,
-        Color(0xFFB8A890),
+    return Stack(
+      children: [
+        // 1. Cinematic Background (Matching Home)
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF0D0A09),
+                Color(0xFF1E1410),
+                Color(0xFF2E1D17),
+              ],
+            ),
+          ),
+        ),
+        // 2. Upward Particles
+        const UpwardParticles(particleCount: 20),
+
+        // 3. Child content
+        SafeArea(child: child),
       ],
-      blobColors: [
-        AppColors.white.withOpacity(0.13),
-        AppColors.primary.withOpacity(0.12),
-        const Color(0xFFDA9C5F).withOpacity(0.1),
-      ],
-      child: child,
     );
   }
 }

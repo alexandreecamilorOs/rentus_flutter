@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../core/responsive_config.dart';
 import '../../../data/providers/auth_provider.dart';
 import '../../../data/providers/entity_providers.dart';
 import '../../../data/models/property_model.dart';
+import '../../../data/models/user_model.dart';
+import '../../components/upward_particles.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -49,132 +52,155 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
     return Scaffold(
       backgroundColor: const Color(0xFF0D0A09),
-      body: Stack(
-        children: [
-          const _CinematicBackground(),
+      body: RefreshIndicator(
+        color: const Color(0xFFDA9C5F),
+        backgroundColor: const Color(0xFF1E1410),
+        onRefresh: () async {
+          await ref.read(authProvider.notifier).refreshUserProfile();
+          // Also refresh properties
+          ref.invalidate(myPropertiesProvider);
+        },
+        child: Stack(
+          children: [
+            const _ProfileBackground(),
 
-          // 2. Main Content (Scrollable)
-          CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: ResponsiveConfig.adaptivePadding(
-                      horizontal: 16, vertical: 40),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 40),
-                      // 3. Hero Section
-                      _HeroSection(
-                          user: user, pulseController: _pulseController),
-                      const SizedBox(height: 32),
-
-                      // 4. Stats & Bio
-                      _StatsAndBio(
-                          user: user,
-                          propertyCount: propertiesAsync.value?.length ?? 0),
-                      const SizedBox(height: 24),
-
-                      // 5. Info Grid
-                      _InfoGrid(user: user),
-                      const SizedBox(height: 32),
-
-                      // 5.1 Management Grid (NEW)
-                      const _ManagementGrid(),
-                      const SizedBox(height: 40),
-
-                      // 6. Properties Header
-                      _SectionHeader(
-                        title: 'Mis Propiedades',
-                        count: propertiesAsync.value?.length ?? 0,
-                        onAdd: () => context.push('/properties/create'),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                  ),
-                ),
-              ),
-
-              // 7. Properties List
-              propertiesAsync.when(
-                data: (properties) => properties.isEmpty
-                    ? SliverToBoxAdapter(
-                        child: _EmptyPropertiesState(
-                          onAdd: () => context.push('/properties/create'),
+            // 2. Main Content (Scrollable)
+            CustomScrollView(
+              physics: const ClampingScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: ResponsiveConfig.adaptivePadding(
+                        horizontal: 16, vertical: 90),
+                    child: Column(
+                      children: [
+                        // Staggered Animations (Phase 7.4 Web Parity)
+                        _FadeIn(
+                          delay: Duration.zero,
+                          child: _HeroSection(
+                              user: user, pulseController: _pulseController),
                         ),
-                      )
-                    : SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) =>
-                                _PropertyListItem(property: properties[index]),
-                            childCount: properties.length,
+                        const SizedBox(height: 32),
+
+                        _SlideUp(
+                          delay: const Duration(milliseconds: 100),
+                          child: _StatsAndBio(
+                              user: user,
+                              propertyCount:
+                                  propertiesAsync.value?.length ?? 0),
+                        ),
+                        const SizedBox(
+                            height: 32), // Increased from 24 for better spacing
+
+                        _SlideUp(
+                          delay: const Duration(milliseconds: 200),
+                          child: _InfoGrid(user: user),
+                        ),
+                        const SizedBox(height: 32),
+
+                        _SlideUp(
+                          delay: const Duration(milliseconds: 300),
+                          child: const _ManagementGrid(),
+                        ),
+                        const SizedBox(height: 40),
+
+                        _FadeIn(
+                          delay: const Duration(milliseconds: 400),
+                          child: _SectionHeader(
+                            title: 'Mis Propiedades',
+                            count: propertiesAsync.value?.length ?? 0,
+                            onAdd: () => context.push('/properties/create'),
                           ),
                         ),
-                      ),
-                loading: () => const SliverToBoxAdapter(
-                  child: Center(
-                      child:
-                          CircularProgressIndicator(color: Color(0xFFDA9C5F))),
-                ),
-                error: (e, _) => SliverToBoxAdapter(
-                  child: Center(
-                    child: Text('Error cargando propiedades: $e',
-                        style: const TextStyle(color: Colors.redAccent)),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
                   ),
                 ),
-              ),
 
-              // 8. Social Links & Footer
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40),
-                  child: _SocialButtons(),
+                // 7. Properties List
+                propertiesAsync.when(
+                  data: (properties) => properties.isEmpty
+                      ? SliverToBoxAdapter(
+                          child: _EmptyPropertiesState(
+                            onAdd: () => context.push('/properties/create'),
+                          ),
+                        )
+                      : SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          sliver: SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) => _PropertyListItem(
+                                  property: properties[index]),
+                              childCount: properties.length,
+                            ),
+                          ),
+                        ),
+                  loading: () => const SliverToBoxAdapter(
+                    child: Center(
+                        child: CircularProgressIndicator(
+                            color: Color(0xFFDA9C5F))),
+                  ),
+                  error: (e, _) => SliverToBoxAdapter(
+                    child: Center(
+                      child: Text('Error cargando propiedades: $e',
+                          style: const TextStyle(color: Colors.redAccent)),
+                    ),
+                  ),
                 ),
-              ),
 
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 60),
-                  child: Center(
-                    child: TextButton.icon(
-                      onPressed: () => ref.read(authProvider.notifier).logout(),
-                      icon: const Icon(Icons.logout, color: Colors.redAccent),
-                      label: const Text(
-                        'Cerrar Sesión',
-                        style: TextStyle(
-                            color: Colors.redAccent,
-                            fontWeight: FontWeight.bold),
+                // 8. Social Links & Footer
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 40),
+                    child: _SocialButtons(),
+                  ),
+                ),
+
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 60),
+                    child: Center(
+                      child: TextButton.icon(
+                        onPressed: () =>
+                            ref.read(authProvider.notifier).logout(),
+                        icon: const Icon(Icons.logout, color: Colors.redAccent),
+                        label: const Text(
+                          'Cerrar Sesión',
+                          style: TextStyle(
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
 
-          // Top Navigation
-          Positioned(
-            top: 40,
-            left: 16,
-            child: IconButton(
-              onPressed: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go('/home');
-                }
-              },
-              icon: const Icon(Icons.arrow_back, color: Color(0xFFF0E5DB)),
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.black45,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+            // Top Navigation (Consolidated)
+            Positioned(
+              top: 50,
+              left: 20,
+              child: IconButton(
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go('/home');
+                  }
+                },
+                icon:
+                    const Icon(Icons.arrow_back, color: Colors.white, size: 22),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.black.withOpacity(0.5),
+                  padding: const EdgeInsets.all(12),
+                  shape: const CircleBorder(),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -182,8 +208,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
 // --- Background Components (Unified with Home) ---
 
-class _CinematicBackground extends StatelessWidget {
-  const _CinematicBackground();
+class _ProfileBackground extends StatelessWidget {
+  const _ProfileBackground();
 
   @override
   Widget build(BuildContext context) {
@@ -194,16 +220,21 @@ class _CinematicBackground extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0xFF0D0A09), Color(0xFF140F0D), Color(0xFF1A1412)],
+              colors: [
+                Color(0xFF0D0A09),
+                Color(0xFF1E1410),
+                Color(0xFF2E1D17),
+              ],
             ),
           ),
         ),
+        const UpwardParticles(),
         // Glow Orbs
         Positioned(
           top: -150,
           right: -100,
           child: _GlowOrb(
-            color: const Color(0xFFDA9C5F).withOpacity(0.1),
+            color: const Color(0xFFDA9C5F).withOpacity(0.08),
             size: 400,
           ),
         ),
@@ -215,7 +246,6 @@ class _CinematicBackground extends StatelessWidget {
             size: 450,
           ),
         ),
-        const _CinematicParticles(),
       ],
     );
   }
@@ -245,76 +275,10 @@ class _GlowOrb extends StatelessWidget {
   }
 }
 
-class _CinematicParticles extends StatefulWidget {
-  const _CinematicParticles();
-
-  @override
-  State<_CinematicParticles> createState() => _CinematicParticlesState();
-}
-
-class _CinematicParticlesState extends State<_CinematicParticles>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 15),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return CustomPaint(
-          painter: _ParticlesPainter(phase: _controller.value),
-          child: Container(),
-        );
-      },
-    );
-  }
-}
-
-class _ParticlesPainter extends CustomPainter {
-  final double phase;
-  _ParticlesPainter({required this.phase});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-    final paint = Paint()..style = PaintingStyle.fill;
-
-    for (int i = 0; i < 40; i++) {
-      double x = (i * 137 + phase * 50) % w;
-      double y = (i * 223 - phase * 80) % h;
-      if (y < 0) y += h;
-
-      paint.color = Colors.white.withOpacity(0.05 + (i % 5) * 0.01);
-      canvas.drawCircle(Offset(x, y), 0.5 + (i % 2), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _ParticlesPainter oldDelegate) {
-    return oldDelegate.phase != phase;
-  }
-}
-
 // --- Content Components ---
 
 class _HeroSection extends StatelessWidget {
-  final dynamic user;
+  final User user;
   final AnimationController pulseController;
 
   const _HeroSection({required this.user, required this.pulseController});
@@ -324,84 +288,28 @@ class _HeroSection extends StatelessWidget {
     return Column(
       children: [
         _PulsingAvatar(photo: user.photo, controller: pulseController),
-        const SizedBox(height: 24),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Flexible(
-              child: Text(
-                user.name,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFFF0E5DB),
-                  letterSpacing: -0.8,
-                  height: 1.1,
-                  shadows: [
-                    Shadow(color: Color(0x99DA9C5F), blurRadius: 20),
-                    Shadow(
-                        color: Colors.black54,
-                        offset: Offset(0, 4),
-                        blurRadius: 10),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 28),
+        // Name + Verified Badge Row (Literal Web Parity)
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              '@${user.email.split("@")[0]}',
+              user.name.isEmpty ? 'Usuario Rentus' : user.name,
               style: const TextStyle(
-                color: Color(0xFFDA9C5F),
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.5,
+                color: Colors.white,
+                fontSize: 28, // Increased from 26
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1.0, // Tighter tracking for premium feel
               ),
             ),
-            const SizedBox(width: 8),
-            const _VerifiedBadge(),
+            const SizedBox(width: 10),
+            const Icon(Icons.check_circle, color: Color(0xFF3B82F6), size: 24),
           ],
         ),
-        const SizedBox(height: 20),
-        _LocationBadge(location: user.address ?? user.city ?? 'Colombia'),
+        const SizedBox(height: 16),
+        // Location Badge Center
+        _LocationBadge(location: user.address ?? user.city ?? 'Popayán, Cauca'),
       ],
-    );
-  }
-}
-
-class _VerifiedBadge extends StatelessWidget {
-  const _VerifiedBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: const Color(0xFF3B82F6).withOpacity(0.1),
-        borderRadius: BorderRadius.circular(100),
-        border: Border.all(color: const Color(0xFF3B82F6).withOpacity(0.3)),
-      ),
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.verified, color: Color(0xFF3B82F6), size: 12),
-          SizedBox(width: 4),
-          Text(
-            'VERIFICADO',
-            style: TextStyle(
-              color: Color(0xFF3B82F6),
-              fontSize: 9,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -413,23 +321,16 @@ class _LocationBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
         color: const Color(0x0AFFFFFF),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0x1ADA9C5F)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFDA9C5F).withOpacity(0.05),
-            blurRadius: 10,
-            spreadRadius: 2,
-          ),
-        ],
+        border: Border.all(color: const Color(0xFFDA9C5F).withOpacity(0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.location_on, color: Color(0xFFDA9C5F), size: 16),
+          _PulsingDot(),
           const SizedBox(width: 8),
           Text(
             location,
@@ -445,69 +346,158 @@ class _LocationBadge extends StatelessWidget {
   }
 }
 
-class _PulsingAvatar extends StatelessWidget {
+class _PulsingDot extends StatefulWidget {
+  @override
+  State<_PulsingDot> createState() => _PulsingDotState();
+}
+
+class _PulsingDotState extends State<_PulsingDot>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: const Color(0xFF2ECC71),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF2ECC71)
+                    .withOpacity(0.5 * _controller.value),
+                blurRadius: 8 * _controller.value,
+                spreadRadius: 2 * _controller.value,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _PulsingAvatar extends ConsumerWidget {
   final String? photo;
   final AnimationController controller;
 
   const _PulsingAvatar({this.photo, required this.controller});
 
+  Future<void> _pickImage(WidgetRef ref) async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      debugPrint('Photo picked: ${image.path}');
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return AnimatedBuilder(
       animation: controller,
       builder: (context, child) {
         return Stack(
           alignment: Alignment.center,
+          clipBehavior: Clip.none,
           children: [
-            // Outer Glow Rings
+            // Outer Glow Rings (Fixed visibility)
             for (int i = 1; i <= 3; i++)
-              Container(
-                width: 140 + (i * 15 * controller.value),
-                height: 140 + (i * 15 * controller.value),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xFFDA9C5F).withOpacity(0.2 / i),
-                    width: 1.0,
+              Transform.scale(
+                scale: 1.0 + (0.2 * controller.value), // Increased visibility
+                child: Container(
+                  width: 150,
+                  height: 150,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFFDA9C5F).withOpacity(
+                        (0.6 - (i * 0.15)) * (1.0 - (0.2 * controller.value)),
+                      ),
+                      width: 1.5,
+                    ),
                   ),
                 ),
               ),
 
-            // Background Circle with Gradient Border
-            Container(
-              width: 140,
-              height: 140,
-              padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFFDA9C5F), Color(0xFFB8791F)],
-                ),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFF1A0E0A),
-                  image: (photo != null && photo!.isNotEmpty)
-                      ? DecorationImage(
-                          image: NetworkImage(photo!),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFDA9C5F).withOpacity(0.3),
-                      blurRadius: 15,
-                      spreadRadius: 2,
+            // Avatar Wrapper
+            GestureDetector(
+              onTap: () => _pickImage(ref),
+              child: Transform.scale(
+                scale: 1.0 + (0.08 * controller.value), // Reduced pulse 1.08
+                child: Container(
+                  width: 150,
+                  height: 150,
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFFDA9C5F).withOpacity(0.5),
+                      width: 3.0,
                     ),
-                  ],
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFDA9C5F).withOpacity(
+                            0.3 + (0.3 * controller.value)), // Glow 0.3 -> 0.6
+                        blurRadius:
+                            15 + (15 * controller.value), // Glow 15px -> 30px
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: (photo != null && photo!.isNotEmpty)
+                              ? Image.network(
+                                  photo!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => const Icon(
+                                      Icons.person,
+                                      size: 80,
+                                      color: Color(0xFFDA9C5F)),
+                                )
+                              : Container(
+                                  color: const Color(0xFF1A0E0A),
+                                  child: const Icon(Icons.person,
+                                      size: 80, color: Color(0xFFDA9C5F)),
+                                ),
+                        ),
+                        // Camera Overlay
+                        Positioned.fill(
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 200),
+                            opacity: 0,
+                            child: Container(
+                              color: Colors.black.withOpacity(0.5),
+                              child: const Icon(Icons.camera_alt,
+                                  color: Colors.white, size: 32),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                child: (photo == null || photo!.isEmpty)
-                    ? const Icon(Icons.person,
-                        size: 70, color: Color(0xFFDA9C5F))
-                    : null,
               ),
             ),
           ],
@@ -518,7 +508,7 @@ class _PulsingAvatar extends StatelessWidget {
 }
 
 class _StatsAndBio extends StatefulWidget {
-  final dynamic user;
+  final User user;
   final int propertyCount;
   const _StatsAndBio({required this.user, required this.propertyCount});
 
@@ -534,7 +524,8 @@ class _StatsAndBioState extends State<_StatsAndBio> {
   @override
   void initState() {
     super.initState();
-    _bio = widget.user.bio ?? 'Sin biografía redactada.';
+    _bio = widget.user.bio ??
+        'Apasionado por los bienes raíces y el diseño moderno.';
     _bioController = TextEditingController(text: _bio);
   }
 
@@ -545,168 +536,209 @@ class _StatsAndBioState extends State<_StatsAndBio> {
   }
 
   void _toggleEdit() {
-    setState(() {
-      if (_isEditing) {
-        // Save logic would go here, updating local state for now
-        _bio = _bioController.text;
-      }
-      _isEditing = !_isEditing;
-    });
+    if (_isEditing) {
+      setState(() => _bio = _bioController.text);
+      // Here would go the API call to update bio
+    }
+    setState(() => _isEditing = !_isEditing);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Bio Section
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: const Color(0x0AFFFFFF),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: const Color(0x1ADA9C5F)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Stats Row
+          Row(
+            children: [
+              Expanded(
+                child: _StatCard(
+                  label: 'Anuncios',
+                  count: '${widget.propertyCount}',
+                  icon: Icons.grid_view_outlined,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _StatCard(
+                  label: 'Seguidores',
+                  count: '1.2k',
+                  icon: Icons.people_outline,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _StatCard(
+                  label: 'Ranking',
+                  count: '4.9',
+                  icon: Icons.star_outline,
+                ),
               ),
             ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Row(
-                    children: [
-                      Icon(Icons.auto_awesome,
-                          color: Color(0xFFDA9C5F), size: 18),
-                      SizedBox(width: 10),
-                      Text(
-                        'MI BIOGRAFÍA',
-                        style: TextStyle(
-                          color: Color(0xFFF0E5DB),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.2,
+          const SizedBox(height: 32),
+          // Bio Section
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0x0AFFFFFF),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: const Color(0x1AFFFFFF)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 40,
+                  offset: const Offset(0, 20),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.auto_awesome,
+                            color: Color(0xFFDA9C5F), size: 18),
+                        SizedBox(width: 10),
+                        Text(
+                          'BIOGRAFÍA',
+                          style: TextStyle(
+                            color: Color(0xFFDA9C5F),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    GestureDetector(
+                      onTap: _toggleEdit,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: _isEditing
+                              ? const Color(0xFFDA9C5F)
+                              : const Color(0x1AFFFFFF),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          _isEditing
+                              ? Icons.check_rounded
+                              : Icons.edit_outlined,
+                          color: _isEditing
+                              ? Colors.black
+                              : const Color(0xFFDA9C5F),
+                          size: 16,
                         ),
                       ),
-                    ],
-                  ),
-                  GestureDetector(
-                    onTap: _toggleEdit,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: _isEditing
-                            ? const Color(0xFFDA9C5F)
-                            : const Color(0x1AFFFFFF),
-                        shape: BoxShape.circle,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                if (_isEditing)
+                  TextField(
+                    controller: _bioController,
+                    maxLines: 4,
+                    maxLength: 240,
+                    autofocus: true,
+                    style: const TextStyle(
+                      color: Color(0xFFF0E5DB),
+                      fontSize: 15,
+                      height: 1.6,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Cuéntanos un poco sobre ti...',
+                      hintStyle: TextStyle(
+                        color: const Color(0xFFF0E5DB).withOpacity(0.3),
                       ),
-                      child: Icon(
-                        _isEditing ? Icons.check : Icons.edit_outlined,
-                        color:
-                            _isEditing ? Colors.black : const Color(0xFFDA9C5F),
-                        size: 16,
+                      border: InputBorder.none,
+                      counterStyle: const TextStyle(
+                        color: Color(0xFFDA9C5F),
+                        fontSize: 10,
                       ),
                     ),
+                  )
+                else
+                  Text(
+                    _bio,
+                    style: TextStyle(
+                      color: const Color(0xFFF0E5DB).withOpacity(0.8),
+                      fontSize: 15,
+                      height: 1.6,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              if (_isEditing)
-                TextField(
-                  controller: _bioController,
-                  maxLines: 4,
-                  maxLength: 240,
-                  autofocus: true,
-                  style: const TextStyle(
-                      color: Color(0xFFF0E5DB), fontSize: 14, height: 1.5),
-                  decoration: InputDecoration(
-                    hintText: 'Cuéntanos un poco sobre ti...',
-                    hintStyle: TextStyle(
-                        color: const Color(0xFFF0E5DB).withOpacity(0.3)),
-                    border: InputBorder.none,
-                    counterStyle:
-                        const TextStyle(color: Color(0xFFDA9C5F), fontSize: 10),
-                  ),
-                )
-              else
-                Text(
-                  _bio,
-                  style: const TextStyle(
-                    color: Color(0xFFCBD5E0),
-                    fontSize: 14,
-                    height: 1.6,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-            ],
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 20),
-        // Stats Grid
-        Row(
-          children: [
-            _buildStatCard(
-                'ANUNCIOS', '${widget.propertyCount}', Icons.home_work_rounded),
-            const SizedBox(width: 12),
-            _buildStatCard('RESEÑAS', '4.9', Icons.star_rounded),
-            const SizedBox(width: 12),
-            _buildStatCard('RENTAL', 'Gold', Icons.workspace_premium_rounded),
-          ],
-        ),
-      ],
+        ],
+      ),
     );
   }
+}
 
-  Widget _buildStatCard(String label, String value, IconData icon) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        decoration: BoxDecoration(
-          color: const Color(0x0AFFFFFF),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0x1ADA9C5F)),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFDA9C5F).withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
+class _StatCard extends StatelessWidget {
+  final String label;
+  final String count;
+  final IconData icon;
+
+  const _StatCard({
+    required this.label,
+    required this.count,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(
+          14), // Matching '.stat-card-compact { padding: 14px }'
+      decoration: BoxDecoration(
+        color: const Color(0x08FFFFFF), // ~0.03 opacity
+        borderRadius:
+            BorderRadius.circular(14), // Matching 'border-radius: 14px'
+        border: Border.all(
+          color: const Color(0xFFDA9C5F)
+              .withOpacity(0.15), // Matching 'rgba(218, 156, 95, 0.15)'
+          width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: AspectRatio(
+        aspectRatio: 1.0,
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                color: Color(0x1ADA9C5F),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: const Color(0xFFDA9C5F), size: 18),
-            ),
-            const SizedBox(height: 10),
+            Icon(icon, color: const Color(0xFFDA9C5F), size: 20),
+            const SizedBox(height: 8),
             Text(
-              value,
+              count,
               style: const TextStyle(
                 color: Color(0xFFF0E5DB),
-                fontSize: 20,
+                fontSize: 22,
                 fontWeight: FontWeight.w900,
-                letterSpacing: -0.5,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               label,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: const Color(0xFFF0E5DB).withOpacity(0.4),
-                fontSize: 9,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.0,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
               ),
             ),
           ],
@@ -717,7 +749,7 @@ class _StatsAndBioState extends State<_StatsAndBio> {
 }
 
 class _InfoGrid extends StatelessWidget {
-  final dynamic user;
+  final User user;
   const _InfoGrid({required this.user});
 
   @override
@@ -726,20 +758,27 @@ class _InfoGrid extends StatelessWidget {
       children: [
         Row(
           children: [
-            _buildInfoCard('EMAIL', user.email, Icons.email_rounded),
-            const SizedBox(width: 12),
-            _buildInfoCard('CELULAR', user.phone ?? 'No registrado',
-                Icons.phone_android_rounded),
+            _buildInfoCard(
+                'EMAIL',
+                user.email.isEmpty ? 'No registrado' : user.email,
+                Icons.email_outlined),
+            const SizedBox(width: 14), // Matching 'gap: 14px' from CSS
+            _buildInfoCard(
+                'CELULAR',
+                (user.phone == null || user.phone!.isEmpty)
+                    ? 'No registrado'
+                    : user.phone!,
+                Icons.phone_android_outlined),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
         Row(
           children: [
             _buildInfoCard('IDENTIDAD', user.idDocumento ?? 'Pendiente',
-                Icons.badge_rounded),
-            const SizedBox(width: 12),
+                Icons.badge_outlined),
+            const SizedBox(width: 14),
             _buildInfoCard('ROL', user.role?.toUpperCase() ?? 'MIEMBRO',
-                Icons.admin_panel_settings_rounded),
+                Icons.shield_outlined),
           ],
         ),
       ],
@@ -749,46 +788,63 @@ class _InfoGrid extends StatelessWidget {
   Widget _buildInfoCard(String label, String value, IconData icon) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding:
+            const EdgeInsets.all(20), // Matching '.info-card { padding: 20px }'
         decoration: BoxDecoration(
-          color: const Color(0x06FFFFFF),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0x1ADA9C5F)),
+          color: const Color(
+              0x05FFFFFF), // Matching '.info-card { background: rgba(255, 255, 255, 0.02) }'
+          borderRadius: BorderRadius.circular(
+              18), // Matching '.info-card { border-radius: 18px }'
+          border: Border.all(
+            color: const Color(0xFFDA9C5F).withOpacity(
+                0.15), // Matching 'border: 1px solid rgba(218, 156, 95, 0.15)'
+          ),
+          boxShadow: [
+            BoxShadow(
+              color:
+                  Colors.black.withOpacity(0.15), // Reduced shadow as per CSS
+              blurRadius: 28,
+              offset: const Offset(0, 10),
+            ),
+          ],
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(
+                  10), // Matching '.info-card-icon { padding: 10px }'
               decoration: BoxDecoration(
-                color: const Color(0x1ADA9C5F),
-                borderRadius: BorderRadius.circular(14),
+                color: const Color(0xFFDA9C5F)
+                    .withOpacity(0.15), // Matching 'rgba(218, 156, 95, 0.15)'
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: const Color(0xFFDA9C5F), size: 18),
+              child: Icon(icon,
+                  color: const Color(0xFFDA9C5F),
+                  size: 22), // Matching 'font-size: 22px'
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                        color: const Color(0xFFF0E5DB).withOpacity(0.35),
-                        fontSize: 9,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.8),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    value,
-                    style: const TextStyle(
-                        color: Color(0xFFF0E5DB),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+            const SizedBox(height: 15), // Reduced from 16
+            Text(
+              label,
+              style: TextStyle(
+                color: const Color(
+                    0xFFA0AEC0), // Matching '.info-label { color: #a0aec0 }'
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.9, // Matching 'letter-spacing: 0.9px'
               ),
+            ),
+            const SizedBox(height: 3), // Matching 'gap: 3px'
+            Text(
+              value,
+              style: const TextStyle(
+                color: Color(
+                    0xFFF0E5DB), // Matching '.info-value { color: #f0e5db }'
+                fontSize: 14, // Matching 'font-size: 14px'
+                fontWeight: FontWeight.w600, // Matching 'font-weight: 600'
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -802,48 +858,56 @@ class _SectionHeader extends StatelessWidget {
   final int count;
   final VoidCallback onAdd;
 
-  const _SectionHeader(
-      {required this.title, required this.count, required this.onAdd});
+  const _SectionHeader({
+    required this.title,
+    required this.count,
+    required this.onAdd,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            const Icon(Icons.maps_home_work_outlined,
-                color: Color(0xFFF0E5DB), size: 22),
-            const SizedBox(width: 10),
-            Text(
-              title,
-              style: const TextStyle(
-                  color: Color(0xFFF0E5DB),
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(width: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title.toUpperCase(),
+                style: const TextStyle(
+                  color: Color(0xFFDA9C5F),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2.0,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '$count Propiedades publicadas',
+                style: TextStyle(
+                  color: const Color(0xFFF0E5DB).withOpacity(0.4),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          IconButton(
+            onPressed: onAdd,
+            icon: Container(
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                    colors: [Color(0xFFDA9C5F), Color(0xFFB8791F)]),
+                color: const Color(0x1ADA9C5F),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Text('$count',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold)),
+              child: const Icon(Icons.add_rounded,
+                  color: Color(0xFFDA9C5F), size: 20),
             ),
-          ],
-        ),
-        IconButton(
-          onPressed: onAdd,
-          icon:
-              const Icon(Icons.add_circle, color: Color(0xFFDA9C5F), size: 28),
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -881,7 +945,7 @@ class _PropertyListItem extends StatelessWidget {
                 SizedBox(
                   height: 200,
                   width: double.infinity,
-                  child: imageUrl != null
+                  child: imageUrl != null && imageUrl.isNotEmpty
                       ? Image.network(
                           imageUrl,
                           fit: BoxFit.cover,
@@ -1153,46 +1217,49 @@ class _ManagementGrid extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "PANEL DE GESTIÓN",
-          style: TextStyle(
-            color: Color(0xFFDA9C5F),
-            fontSize: 12,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 2.0,
+        const Padding(
+          padding: EdgeInsets.only(left: 4),
+          child: Text(
+            "PANEL DE GESTIÓN",
+            style: TextStyle(
+              color: Color(0xFFDA9C5F),
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 2.0,
+            ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           crossAxisCount: 2,
           mainAxisSpacing: 16,
           crossAxisSpacing: 16,
-          childAspectRatio: 1.4,
+          childAspectRatio: 1.3,
           children: [
             _ManagementCard(
               title: "Mis Contratos",
               subtitle: "Gestión de firmas",
-              icon: Icons.description_rounded,
+              icon: Icons.description_outlined,
               onTap: () => context.push('/contracts'),
             ),
             _ManagementCard(
               title: "Pagos y Rentas",
-              subtitle: "Historial de transacciones",
-              icon: Icons.payments_rounded,
+              subtitle: "Historial",
+              icon: Icons.payments_outlined,
               onTap: () => context.push('/payments'),
             ),
             _ManagementCard(
               title: "Mantenimiento",
-              subtitle: "Solicitudes técnicas",
-              icon: Icons.build_circle_rounded,
+              subtitle: "Soporte técnico",
+              icon: Icons.build_outlined,
               onTap: () => context.push('/maintenance'),
             ),
             _ManagementCard(
               title: "Mis Reportes",
-              subtitle: "Quejas y sugerencias",
-              icon: Icons.report_problem_rounded,
+              subtitle: "Incidencias",
+              icon: Icons.report_problem_outlined,
               onTap: () => context.push('/reports'),
             ),
           ],
@@ -1220,16 +1287,19 @@ class _ManagementCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0x0AFFFFFF),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0x1ADA9C5F)),
+          color:
+              const Color(0x05FFFFFF), // Matching 'rgba(255, 255, 255, 0.02)'
+          borderRadius: BorderRadius.circular(18), // Reduced from 28
+          border: Border.all(
+            color: const Color(0xFFDA9C5F).withOpacity(0.1),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 28,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -1238,12 +1308,12 @@ class _ManagementCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: const Color(0x1ADA9C5F),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: const Color(0xFFDA9C5F), size: 24),
+              child: Icon(icon, color: const Color(0xFFDA9C5F), size: 22),
             ),
             const Spacer(),
             Text(
@@ -1252,14 +1322,15 @@ class _ManagementCard extends StatelessWidget {
                 color: Color(0xFFF0E5DB),
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
+                letterSpacing: -0.2,
               ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 4),
             Text(
               subtitle,
               style: TextStyle(
                 color: const Color(0xFFF0E5DB).withOpacity(0.4),
-                fontSize: 9,
+                fontSize: 10,
                 fontWeight: FontWeight.w600,
               ),
               maxLines: 1,
@@ -1268,6 +1339,131 @@ class _ManagementCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// --- Animation Helpers (Phase 7.4 Web Parity) ---
+
+class _FadeIn extends StatefulWidget {
+  final Widget child;
+  final Duration delay;
+  const _FadeIn({required this.child, this.delay = Duration.zero});
+
+  @override
+  State<_FadeIn> createState() => _FadeInState();
+}
+
+class _FadeInState extends State<_FadeIn> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _opacity;
+  late Animation<Offset> _offset;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+
+    // Matching 'translateY(25px)' from CSS
+    _offset =
+        Tween<Offset>(begin: const Offset(0, 25), end: Offset.zero).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+    );
+
+    Future.delayed(widget.delay, () {
+      if (mounted) _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _opacity.value,
+          child: Transform.translate(
+            offset: _offset.value,
+            child: child,
+          ),
+        );
+      },
+      child: widget.child,
+    );
+  }
+}
+
+class _SlideUp extends StatefulWidget {
+  final Widget child;
+  final Duration delay;
+  const _SlideUp({required this.child, this.delay = Duration.zero});
+
+  @override
+  State<_SlideUp> createState() => _SlideUpState();
+}
+
+class _SlideUpState extends State<_SlideUp>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _opacity;
+  late Animation<Offset> _offset;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+
+    // Matching 'translateY(15px)' from CSS
+    _offset =
+        Tween<Offset>(begin: const Offset(0, 15), end: Offset.zero).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+    );
+
+    Future.delayed(widget.delay, () {
+      if (mounted) _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _opacity.value,
+          child: Transform.translate(
+            offset: _offset.value,
+            child: child,
+          ),
+        );
+      },
+      child: widget.child,
     );
   }
 }
